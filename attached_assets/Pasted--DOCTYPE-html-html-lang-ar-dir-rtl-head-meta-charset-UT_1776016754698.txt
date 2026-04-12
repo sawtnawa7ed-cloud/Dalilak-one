@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تجربة منصة صوتنا واحد</title>
+    <style>
+        :root { --green: #a2ff00; --gold: #d4af37; --bg: #0b0b0b; --card: #161616; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #e0e0e0; }
+        
+        header { background: #000; border-bottom: 2px solid var(--gold); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo-box { display: flex; align-items: center; gap: 12px; }
+        .logo-img { width: 55px; height: 55px; border: 2px solid var(--green); border-radius: 12px; object-fit: cover; }
+        
+        .admin-btn { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        
+        /* لوحة التحكم الإدارية */
+        #adminPanel { background: #1a1a1a; padding: 25px; border-bottom: 3px solid var(--green); display: none; }
+        .admin-section { margin-bottom: 20px; padding: 15px; border: 1px solid #333; border-radius: 10px; }
+        
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #252525; color: white; border: 1px solid #444; border-radius: 8px; box-sizing: border-box; }
+        .btn-publish { background: var(--green); color: black; border: none; padding: 15px; width: 100%; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+
+        /* عرض المحتوى */
+        .container { max-width: 850px; margin: auto; padding: 20px; }
+        .post { background: var(--card); margin-bottom: 30px; padding: 25px; border-radius: 15px; border-right: 5px solid var(--green); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .post h2 { color: var(--green); margin-top: 0; }
+        .post p { line-height: 1.8; font-size: 1.1rem; white-space: pre-wrap; }
+        .post video, .post img { width: 100%; border-radius: 12px; margin-top: 20px; background: #000; }
+
+        footer { background: #000; padding: 30px; border-top: 1px solid var(--gold); text-align: center; margin-top: 50px; }
+        .contact-info { color: var(--gold); margin: 5px; display: inline-block; padding: 0 15px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-box">
+        <img id="siteLogo" class="logo-img" src="https://placeholder.com">
+        <h2 style="color:var(--green); margin:0;">صوتنا واحد</h2>
+    </div>
+    <button class="admin-btn" onclick="toggleAdmin()">⚙️ الإدارة</button>
+</header>
+
+<div id="adminPanel">
+    <div class="admin-section">
+        <h3 style="color:var(--gold)">🏠 بيانات المبادرة</h3>
+        <input type="file" id="newLogo" accept="image/*">
+        <textarea id="aboutInp" placeholder="من نحن؟ (رسالة المبادرة)"></textarea>
+        <input type="text" id="phoneInp" placeholder="رقم الهاتف">
+        <input type="email" id="emailInp" placeholder="البريد الإلكتروني">
+        <button onclick="saveProfile()" style="background:var(--gold); padding:10px; border:none; border-radius:5px; cursor:pointer;">حفظ بيانات المبادرة</button>
+    </div>
+
+    <div class="admin-section">
+        <h3 style="color:var(--green)">📝 إضافة تقرير / منشور جديد</h3>
+        <input id="postT" placeholder="عنوان المنشور">
+        <textarea id="postC" rows="6" placeholder="اكتب التفاصيل هنا (يدعم النصوص الطويلة جداً)"></textarea>
+        <input type="file" id="postM" accept="image/*,video/*">
+        <button class="btn-publish" onclick="handlePost()">نشر الآن على النسخة التجريبية</button>
+    </div>
+</div>
+
+<div class="container">
+    <div id="aboutBox" style="text-align:center; padding:30px 0;">
+        <p id="aboutTxt" style="font-style:italic; font-size:1.2rem; color:#bbb;">جاري تحميل معلومات المبادرة...</p>
+    </div>
+
+    <div id="feed"></div>
+</div>
+
+<footer>
+    <div id="footerContacts"></div>
+    <p style="font-size:0.8rem; margin-top:20px; color:#666;">© 2024 منصة صوتنا واحد - لبنان | نسخة تجريبية</p>
+</footer>
+
+<script>
+    let db;
+    // إنشاء قاعدة بيانات IndexedDB للملفات الكبيرة (فيديو/صور)
+    const request = indexedDB.open("SawtnaProDB", 1);
+    
+    request.onupgradeneeded = e => {
+        db = e.target.result;
+        db.createObjectStore("content", { keyPath: "id", autoIncrement: true });
+        db.createObjectStore("profile", { keyPath: "id" });
+    };
+
+    request.onsuccess = e => { db = e.target.result; loadProfile(); renderPosts(); };
+
+    function toggleAdmin() {
+        const p = document.getElementById('adminPanel');
+        p.style.display = p.style.display === "block" ? "none" : "block";
+    }
+
+    // حفظ بيانات المبادرة (الشعار، من نحن، الاتصال)
+    function saveProfile() {
+        const profile = {
+            id: "site_info",
+            about: document.getElementById('aboutInp').value,
+            phone: document.getElementById('phoneInp').value,
+            email: document.getElementById('emailInp').value,
+            logo: null
+        };
+
+        const file = document.getElementById('newLogo').files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                profile.logo = e.target.result;
+                storeProfile(profile);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            storeProfile(profile);
+        }
+    }
+
+    function storeProfile(p) {
+        const tx = db.transaction("profile", "readwrite");
+        tx.objectStore("profile").put(p);
+        tx.oncomplete = () => { alert("تم حفظ البيانات!"); location.reload(); };
+    }
+
+    function loadProfile() {
+        const tx = db.transaction("profile", "readonly");
+        tx.objectStore("profile").get("site_info").onsuccess = e => {
+            const p = e.target.result;
+            if (p) {
+                document.getElementById('aboutTxt').innerText = p.about || "صوتنا واحد";
+                document.getElementById('footerContacts').innerHTML = `
+                    <span class="contact-info">📞 ${p.phone}</span>
+                    <span class="contact-info">📧 ${p.email}</span>
+                `;
+                if(p.logo) document.getElementById('siteLogo').src = p.logo;
+                
+                // ملء الخانات في الإدارة
+                document.getElementById('aboutInp').value = p.about;
+                document.getElementById('phoneInp').value = p.phone;
+                document.getElementById('emailInp').value = p.email;
+            }
+        };
+    }
+
+    // نشر المنشورات الحرة (فيديو طويل، صور، نصوص)
+    function handlePost() {
+        const t = document.getElementById('postT').value;
+        const c = document.getElementById('postC').value;
+        const file = document.getElementById('postM').files[0];
+
+        if (!t && !c && !file) return;
+
+        const post = { t, c, file: file || null, type: file ? (file.type.startsWith('video') ? 'vid' : 'img') : null, date: new Date().toLocaleString('ar-LB') };
+        
+        const tx = db.transaction("content", "readwrite");
+        tx.objectStore("content").add(post);
+        tx.oncomplete = () => { location.reload(); };
+    }
+
+    function renderPosts() {
+        const feed = document.getElementById('feed');
+        const tx = db.transaction("content", "readonly");
+        tx.objectStore("content").openCursor(null, 'prev').onsuccess = e => {
+            const cursor = e.target.result;
+            if (cursor) {
+                const p = cursor.value;
+                const div = document.createElement('div');
+                div.className = 'post';
+                
+                let media = "";
+                if (p.file) {
+                    const url = URL.createObjectURL(p.file);
+                    media = p.type === 'vid' ? `<video controls src="${url}"></video>` : `<img src="${url}">`;
+                }
+
+                div.innerHTML = `
+                    <small style="color:var(--gold)">${p.date}</small>
+                    ${p.t ? `<h2>${p.t}</h2>` : ''}
+                    ${p.c ? `<p>${p.c}</p>` : ''}
+                    ${media}
+                    <br><button onclick="deletePost(${p.id})" style="background:#ff4444; color:white; border:none; padding:5px 10px; border-radius:5px; margin-top:15px; cursor:pointer;">حذف</button>
+                `;
+                feed.appendChild(div);
+                cursor.continue();
+            }
+        };
+    }
+
+    function deletePost(id) {
+        if(confirm("هل تريد حذف هذا التقرير؟")) {
+            const tx = db.transaction("content", "readwrite");
+            tx.objectStore("content").delete(id);
+            tx.oncomplete = () => location.reload();
+        }
+    }
+</script>
+
+</body>
+</html>
