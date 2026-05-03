@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>دليلك — إمكانية الوصول في لبنان</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFC107; --gold2:#FF8F00; --red:#FF1744; --green:#00C853;
+  --bg:#080808; --bg2:#111; --card:#1a1a1a; --card2:#222;
+  --border:#2a2a2a; --text:#f0f0f0; --text2:#aaa; --muted:#555;
+  --r:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;overflow:hidden;}
+input,button,select,textarea{font-family:'Cairo',sans-serif;}
+
+/* ══ SCREENS ══ */
+.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden;background:var(--bg);}
+.screen.active{display:flex;}
+
+/* ══ SPLASH ══ */
+#s-splash{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,#1a1400 0%,#080808 70%);}
+.splash-logo{position:relative;width:100px;height:100px;margin-bottom:20px;}
+.splash-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--gold);animation:pulse 2.5s ease-in-out infinite;}
+.splash-ring2{position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(255,193,7,.3);animation:pulse 2.5s ease-in-out infinite .4s;}
+.splash-ico{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.8rem;}
+.splash-name{font-size:2.4rem;font-weight:900;color:var(--gold);letter-spacing:2px;margin-bottom:6px;}
+.splash-sub{font-size:13px;color:var(--text2);margin-bottom:40px;}
+.splash-bar{width:160px;height:3px;background:var(--card2);border-radius:10px;overflow:hidden;}
+.splash-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0;animation:load 2s ease forwards;}
+@keyframes load{to{width:100%;}}
+@keyframes pulse{0%,100%{opacity:.4;transform:scale(1);}50%{opacity:1;transform:scale(1.04);}}
+@keyframes fistSpin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* ══ LANG SCREEN ══ */
+#s-lang{align-items:center;justify-content:center;padding:24px;}
+.lang-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;max-width:360px;margin-top:24px;}
+.lang-btn{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:22px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:.2s;}
+.lang-btn:hover,.lang-btn.active{border-color:var(--gold);background:rgba(255,193,7,.08);}
+.lang-flag{font-size:2rem;}
+.lang-label{font-size:14px;font-weight:800;color:var(--text);}
+
+/* ══ WHO SCREEN ══ */
+#s-who{align-items:center;justify-content:center;padding:24px;}
+.who-cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:360px;margin-top:24px;}
+.who-card{background:var(--card);border:2px solid var(--border);border-radius:20px;padding:24px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:.25s;}
+.who-card:active{transform:scale(.97);}
+.who-card.visitor{border-color:rgba(0,200,83,.3);}
+.who-card.resident{border-color:rgba(255,193,7,.3);}
+.who-ico{font-size:2.4rem;width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:14px;}
+.who-card.visitor .who-ico{background:rgba(0,200,83,.1);}
+.who-card.resident .who-ico{background:rgba(255,193,7,.1);}
+.who-info h3{font-size:17px;font-weight:900;}
+.who-info p{font-size:12px;color:var(--text2);margin-top:3px;}
+
+/* ══ DISABILITY SCREEN ══ */
+#s-disability{padding:0;}
+.dis-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;overflow-y:auto;flex:1;}
+.dis-card{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:.2s;text-align:center;}
+.dis-card:active{transform:scale(.95);}
+.dis-card.selected{border-color:var(--gold);background:rgba(255,193,7,.08);}
+.dis-ico{font-size:2rem;}
+.dis-label{font-size:13px;font-weight:700;color:var(--text);}
+.dis-footer{padding:16px;border-top:1px solid var(--border);}
+
+/* ══ VISITOR PAGE ══ */
+#s-visitor{flex-direction:column;}
+.vis-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.vis-search-wrap{flex:1;position:relative;}
+.vis-search{width:100%;background:var(--bg2);border:2px solid var(--border);border-radius:50px;padding:10px 18px 10px 44px;color:var(--text);font-size:14px;outline:none;transition:.2s;}
+.vis-search:focus{border-color:var(--gold);}
+.search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted);}
+.filter-row{display:flex;gap:8px;padding:10px 14px;overflow-x:auto;border-bottom:1px solid var(--border);scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.f-chip{background:var(--card);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;color:var(--text2);transition:.2s;}
+.f-chip.active{background:var(--gold);color:#000;border-color:var(--gold);}
+.places-list{flex:1;overflow-y:auto;padding:12px;}
+.place-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;cursor:pointer;transition:.2s;}
+.place-card:active{transform:scale(.98);}
+.place-card-top{display:flex;align-items:flex-start;gap:12px;}
+.place-av{width:48px;height:48px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.place-name{font-size:15px;font-weight:800;color:var(--text);}
+.place-meta{font-size:12px;color:var(--text2);margin-top:3px;}
+.place-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.ptag{background:var(--card2);border-radius:50px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--text2);}
+.ptag.good{background:rgba(0,200,83,.1);color:#00C853;}
+.ptag.bad{background:rgba(255,23,68,.1);color:#FF1744;}
+.empty-vis{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:var(--muted);gap:10px;}
+.empty-vis span{font-size:3rem;}
+
+/* ══ PLACE DETAIL ══ */
+#s-detail{flex-direction:column;}
+.detail-body{flex:1;overflow-y:auto;padding:16px;}
+.detail-img{width:100%;height:180px;background:var(--card2);border-radius:var(--r);object-fit:cover;margin-bottom:14px;}
+.detail-imgs-row{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none;}
+.detail-imgs-row::-webkit-scrollbar{display:none;}
+.detail-thumb{width:80px;height:80px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--card2);}
+.detail-section{margin-bottom:16px;}
+.detail-section-title{font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.detail-note{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);line-height:1.7;}
+.feat-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.feat-row:last-child{border-bottom:none;}
+.feat-label{font-size:13px;font-weight:700;}
+.feat-status{font-size:12px;font-weight:800;padding:4px 12px;border-radius:50px;}
+.feat-status.good{background:rgba(0,200,83,.1);color:#00C853;}
+.feat-status.bad{background:rgba(255,23,68,.1);color:#FF1744;}
+.feat-status.avg{background:rgba(255,193,7,.1);color:#FFC107;}
+.nav-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:var(--r);color:#000;font-weight:900;font-size:15px;cursor:pointer;margin-top:8px;}
+.comment-section{background:var(--card);border:1px solid rgba(255,193,7,.2);border-radius:var(--r);padding:14px;margin-top:16px;}
+.comment-section h4{font-size:13px;font-weight:900;color:var(--gold);margin-bottom:10px;}
+
+/* ══ RESIDENT LOGIN ══ */
+#s-reslogin{align-items:center;justify-content:center;padding:24px;}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;width:100%;max-width:380px;}
+.step-dots{display:flex;gap:8px;justify-content:center;margin-bottom:20px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);}
+.dot.active{background:var(--gold);width:24px;border-radius:50px;}
+
+/* ══ RESIDENT DASHBOARD ══ */
+#s-resident{flex-direction:column;}
+.res-tabs{display:flex;background:var(--card);border-top:1px solid var(--border);padding:8px 12px;gap:6px;}
+.res-tab{flex:1;padding:10px;border:none;border-radius:10px;background:none;color:var(--muted);font-size:11px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s;}
+.res-tab.active{background:var(--gold);color:#000;}
+.res-tab span{font-size:1.3rem;}
+.res-content{flex:1;overflow-y:auto;}
+
+/* ══ ADMIN ══ */
+#s-admin{flex-direction:column;}
+.admin-tabs{display:flex;gap:6px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;}
+.admin-tab{padding:8px 16px;border-radius:50px;border:1px solid var(--border);background:none;color:var(--text2);font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.admin-tab.active{background:var(--gold);color:#000;border-color:var(--gold);}
+.admin-content{flex:1;overflow-y:auto;padding:16px;}
+.org-card{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.org-card.active-org{border-color:rgba(0,200,83,.3);}
+.org-card.inactive-org{border-color:rgba(255,23,68,.2);}
+.org-row{display:flex;align-items:center;gap:10px;}
+.review-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+
+/* ══ SHARED ══ */
+.page-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.page-title{font-size:18px;font-weight:900;flex:1;}
+.back-btn{width:38px;height:38px;border-radius:50%;background:var(--card2);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.section-title{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:6px;}
+.section-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6;}
+.btn-gold{width:100%;padding:15px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:var(--r);color:#000;font-weight:900;font-size:15px;cursor:pointer;transition:.2s;}
+.btn-gold:active{transform:scale(.97);}
+.btn-outline{width:100%;padding:13px;background:none;border:2px solid var(--border);border-radius:var(--r);color:var(--text2);font-weight:700;font-size:14px;cursor:pointer;}
+.inp{width:100%;background:var(--card2);border:2px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:14px;outline:none;transition:.2s;margin-bottom:10px;}
+.inp:focus{border-color:var(--gold);}
+.inp-label{font-size:12px;font-weight:800;color:var(--text2);margin-bottom:5px;}
+.err-box{background:rgba(255,23,68,.1);border:1px solid rgba(255,23,68,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);font-weight:700;margin-bottom:12px;display:none;}
+.badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:900;}
+.badge-green{background:rgba(0,200,83,.1);color:#00C853;}
+.badge-red{background:rgba(255,23,68,.1);color:#FF1744;}
+.badge-gold{background:rgba(255,193,7,.1);color:#FFC107;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;border:1px solid #333;border-radius:50px;padding:12px 24px;font-size:13px;font-weight:700;color:#fff;z-index:999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.add-form{padding:16px;}
+.add-form .section-label{font-size:13px;font-weight:900;color:var(--gold);margin-bottom:10px;margin-top:16px;}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.feat-btn{background:var(--card);border:2px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:.2s;}
+.feat-btn.ok{border-color:var(--green);background:rgba(0,200,83,.08);color:var(--green);}
+.feat-btn.nok{border-color:var(--red);background:rgba(255,23,68,.08);color:var(--red);}
+.feat-btn.avg{border-color:var(--gold);background:rgba(255,193,7,.08);color:var(--gold);}
+.feat-ico{font-size:1.4rem;}
+.feat-name{font-size:11px;font-weight:700;margin-top:4px;}
+textarea.inp{resize:none;min-height:80px;}
+select.inp{appearance:none;}
+
+/* محافظات */
+.gov-select{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.gov-btn{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:12px 16px;text-align:right;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);transition:.2s;}
+.gov-btn.active{border-color:var(--gold);background:rgba(255,193,7,.06);}
+
+/* نتائج البحث */
+.search-results-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13px;color:var(--text2);}
+.results-count{font-weight:900;color:var(--gold);}
+</style>
+</head>
+<body>
+
+<!-- ══ 1. SPLASH ══ -->
+<div class="screen active" id="s-splash">
+  <div class="splash-logo">
+    <div class="splash-ring"></div>
+    <div class="splash-ring2"></div>
+    <div class="splash-ico" style="animation:fistSpin 8s linear infinite">✊</div>
+  </div>
+  <div class="splash-name">دليلك</div>
+  <div class="splash-sub">دليل إمكانية الوصول في لبنان</div>
+  <div class="splash-bar"><div class="splash-fill"></div></div>
+</div>
+
+<!-- ══ 2. LANG ══ -->
+<div class="screen" id="s-lang">
+  <div style="text-align:center;">
+    <div class="section-title" id="lt">اختر لغتك</div>
+    <div class="section-sub" id="ls">Choose your language / Choisissez votre langue</div>
+  </div>
+  <div class="lang-grid">
+    <div class="lang-btn" onclick="setLang('ar')">
+      <div class="lang-flag">🇱🇧</div>
+      <div class="lang-label">العربية</div>
+    </div>
+    <div class="lang-btn" onclick="setLang('en')">
+      <div class="lang-flag">🇬🇧</div>
+      <div class="lang-label">English</div>
+    </div>
+    <div class="lang-btn" onclick="setLang('fr')">
+      <div class="lang-flag">🇫🇷</div>
+      <div class="lang-label">Français</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 3. WHO ══ -->
+<div class="screen" id="s-who">
+  <div style="text-align:center">
+    <div class="section-title" id="wt">من أنت؟</div>
+    <div class="section-sub" id="ws">اختر نوع دخولك للتطبيق</div>
+  </div>
+  <div class="who-cards">
+    <div class="who-card visitor" onclick="goDisability()">
+      <div class="who-ico">👤</div>
+      <div class="who-info">
+        <h3 id="wv">زائر</h3>
+        <p id="wvs">أبحث عن أماكن مناسبة لي</p>
+      </div>
+      <div style="margin-right:auto;color:var(--green);font-size:20px">←</div>
+    </div>
+    <div class="who-card resident" onclick="goResLogin()">
+      <div class="who-ico">🏅</div>
+      <div class="who-info">
+        <h3 id="wr">مقيّم / خبير</h3>
+        <p id="wrs">أضيف وأقيّم الأماكن</p>
+      </div>
+      <div style="margin-right:auto;color:var(--gold);font-size:20px">←</div>
+    </div>
+    <div class="who-card" style="border-color:rgba(100,100,255,.3)" onclick="goAdminLogin()">
+      <div class="who-ico" style="background:rgba(100,100,255,.1)">🔐</div>
+      <div class="who-info">
+        <h3 id="wa">مدير / جمعية</h3>
+        <p id="was">إدارة التطبيق والمستخدمين</p>
+      </div>
+      <div style="margin-right:auto;color:#6464ff;font-size:20px">←</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 4. DISABILITY ══ -->
+<div class="screen" id="s-disability">
+  <div class="page-header">
+    <button class="back-btn" onclick="goScreen('s-who')">→</button>
+    <div class="page-title" id="dt">نوع الإعاقة</div>
+  </div>
+  <div style="padding:12px 16px 0;font-size:13px;color:var(--text2)" id="ds">اختر ما يناسبك (يمكن اختيار أكثر من واحد)</div>
+  <div class="dis-grid" id="dis-grid"></div>
+  <div class="dis-footer">
+    <button class="btn-gold" onclick="goVisitor()" id="dis-btn">التالي ←</button>
+  </div>
+</div>
+
+<!-- ══ 5. VISITOR PAGE ══ -->
+<div class="screen" id="s-visitor">
+  <div class="vis-header">
+    <button class="back-btn" onclick="goScreen('s-disability')" style="flex-shrink:0">→</button>
+    <div class="vis-search-wrap">
+      <span class="search-ico">🔍</span>
+      <input class="vis-search" id="vis-search" type="text" placeholder="ابحث: مطعم، صيدلية، مخفر..." oninput="doSearch()">
+    </div>
+    <button onclick="openNearMe()" style="background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.3);border-radius:50px;padding:8px 12px;color:var(--gold);font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0">📍 قربي</button>
+  </div>
+  <div class="filter-row" id="gov-filter"></div>
+  <div class="filter-row" id="cat-filter" style="border-bottom:2px solid var(--border)"></div>
+  <div class="search-results-header">
+    <span id="res-label">النتائج</span>
+    <span class="results-count" id="res-count">0</span>
+  </div>
+  <div class="places-list" id="vis-places"></div>
+</div>
+
+<!-- ══ 6. PLACE DETAIL ══ -->
+<div class="screen" id="s-detail">
+  <div class="page-header">
+    <button class="back-btn" id="detail-back">→</button>
+    <div class="page-title" id="detail-title">تفاصيل المكان</div>
+    <button id="detail-report-btn" onclick="openComment()" style="background:none;border:none;color:var(--gold);font-size:13px;font-weight:800;cursor:pointer">⚠️ إبلاغ</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- ══ 7. RESIDENT LOGIN ══ -->
+<div class="screen" id="s-reslogin">
+  <div style="text-align:center;margin-bottom:20px;padding-top:20px">
+    <div style="font-size:2rem;margin-bottom:8px">🤝</div>
+    <div class="section-title">دخول الجمعية</div>
+    <div class="section-sub">أدخل رمز الدخول الخاص بجمعيتك</div>
+  </div>
+  <div class="login-box">
+    <div id="err-res" class="err-box"></div>
+    <div class="inp-label">اسم الجمعية / المؤسسة</div>
+    <input class="inp" id="res-orgname" type="text" placeholder="اسم جمعيتك">
+    <div class="inp-label">رمز الدخول</div>
+    <input class="inp" id="res-code" type="text" placeholder="ORG-XXXX-XXXX"
+      style="text-align:center;letter-spacing:2px;font-weight:900;color:var(--gold);font-size:16px"
+      autocomplete="off">
+    <button class="btn-gold" onclick="resLogin()">دخول</button>
+    <div class="divider"></div>
+    <button class="btn-outline" onclick="goScreen('s-who')">→ العودة</button>
+  </div>
+</div>
+
+<!-- ══ 8. RESIDENT DASHBOARD ══ -->
+<div class="screen" id="s-resident">
+  <div class="page-header">
+    <div class="page-title">
+      <span id="res-welcome">لوحة المقيّم</span>
+      <div style="font-size:11px;color:var(--gold);font-weight:700" id="res-orgbadge"></div>
+    </div>
+    <button onclick="doLogout()" style="background:rgba(255,23,68,.1);border:1px solid rgba(255,23,68,.2);border-radius:50px;padding:6px 12px;color:var(--red);font-size:12px;font-weight:800;cursor:pointer">خروج</button>
+  </div>
+  <div class="res-content" id="res-content"></div>
+  <div class="res-tabs">
+    <button class="res-tab active" onclick="resTab('add')" id="rtab-add"><span>➕</span>إضافة</button>
+    <button class="res-tab" onclick="resTab('my')" id="rtab-my"><span>📍</span>أماكني</button>
+    <button class="res-tab" onclick="resTab('rate')" id="rtab-rate"><span>⭐</span>تقييم</button>
+  </div>
+</div>
+
+<!-- ══ 9. ADMIN LOGIN ══ -->
+<div class="screen" id="s-adminlogin">
+  <div style="text-align:center;margin-bottom:20px;padding-top:40px">
+    <div style="font-size:2rem;margin-bottom:8px">👑</div>
+    <div class="section-title">دخول المدير</div>
+    <div class="section-sub">الوصول مقيّد للمسؤولين فقط</div>
+  </div>
+  <div class="login-box" style="max-width:380px;margin:0 auto">
+    <div class="step-dots" id="adm-dots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+    </div>
+    <div id="adm-step1">
+      <div id="err-adm" class="err-box"></div>
+      <div class="inp-label">اسم المستخدم</div>
+      <input class="inp" id="adm-user" type="text" placeholder="اسم المستخدم" autocomplete="username">
+      <div class="inp-label">كلمة المرور</div>
+      <input class="inp" id="adm-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn-gold" onclick="admStep1()">دخول</button>
+    </div>
+    
+    <div class="divider"></div>
+    <button class="btn-outline" onclick="goScreen('s-who')">→ العودة</button>
+  </div>
+</div>
+
+<!-- ══ 10. ADMIN DASHBOARD ══ -->
+<div class="screen" id="s-admin">
+  <div class="page-header">
+    <div class="page-title">👑 لوحة المدير</div>
+    <button onclick="doLogout()" style="background:rgba(255,23,68,.1);border:1px solid rgba(255,23,68,.2);border-radius:50px;padding:6px 12px;color:var(--red);font-size:12px;font-weight:800;cursor:pointer">خروج</button>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="adminTab('orgs')">🤝 الجمعيات</button>
+    <button class="admin-tab" onclick="adminTab('reviews')">📋 التقييمات</button>
+    <button class="admin-tab" onclick="adminTab('comments')">💬 التعليقات</button>
+    <button class="admin-tab" onclick="adminTab('places')">📍 الأماكن</button>
+  </div>
+  <div class="admin-content" id="admin-content"></div>
+</div>
+
+<!-- ══ COMMENT MODAL ══ -->
+<div id="modal-comment" style="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);display:none;align-items:flex-end;">
+  <div style="background:var(--card);border-radius:24px 24px 0 0;padding:24px;width:100%;max-height:85vh;overflow-y:auto;">
+    <div style="font-size:16px;font-weight:900;color:var(--gold);margin-bottom:14px">⚠️ إبلاغ عن مشكلة</div>
+    <div class="inp-label">وصف المشكلة</div>
+    <textarea class="inp" id="cmt-text" placeholder="مثال: المصعد لا يعمل، لا توجد منحدرات..."></textarea>
+    <div class="inp-label">رقم الهاتف</div>
+    <input class="inp" id="cmt-phone" type="tel" placeholder="+961 XX XXX XXX">
+    <div class="inp-label">البريد الإلكتروني (اختياري)</div>
+    <input class="inp" id="cmt-email" type="email" placeholder="example@email.com">
+    <button class="btn-gold" onclick="submitComment()" style="margin-top:4px">إرسال إلى المدير</button>
+    <button class="btn-outline" onclick="closeComment()" style="margin-top:8px">إلغاء</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA & STATE
+// ══════════════════════════════════════════════
+var lang = 'ar';
+var currentScreen = 's-splash';
+var selectedDisabilities = [];
+var currentUser = null;
+var activeDetailId = null;
+var fromScreen = 's-visitor';
+
+function isAdmin(){ return !!(currentUser && currentUser.role==='admin'); }
+function canEdit(){ return !!(currentUser && (currentUser.role==='admin' || currentUser.role==='org')); }
+
+// كلمة المرور محمية بالترميز
+function _chkPass(v){ return btoa(v)==='bzYxMDE5NQ=='; }
+function _chkOtp(v){ return btoa(v+':dlk')==='NzUzMTpkbGs='; }
+
+var PLACES_KEY = 'dlk_places_v1';
+var USERS_KEY  = 'dlk_users_v1';
+var COMMENTS_KEY = 'dlk_comments_v1';
+
+// محافظات لبنان
+var GOVS = {
+  ar: ['الكل','بيروت','جبل لبنان','الشمال','الجنوب','البقاع','عكار','النبطية','بعلبك الهرمل'],
+  en: ['All','Beirut','Mount Lebanon','North','South','Bekaa','Akkar','Nabatieh','Baalbek-Hermel'],
+  fr: ['Tout','Beyrouth','Mont-Liban','Nord','Sud','Bekaa','Akkar','Nabatieh','Baalbek-Hermel']
+};
+var GOVS_AR = ['الكل','بيروت','جبل لبنان','الشمال','الجنوب','البقاع','عكار','النبطية','بعلبك الهرمل'];
+
+var CATS = {
+  ar: ['الكل','مطعم','مقهى','صيدلية','مستشفى','مخفر','بنك','مدرسة','جامعة','فندق','حديقة','مول','معلم أثري','متحف','مسجد','كنيسة','مركز صحي','محطة وقود','سوبرماركت','صالون','نادي رياضي','مسرح','مكتبة','مطار','محطة باص'],
+  en: ['All','Restaurant','Café','Pharmacy','Hospital','Police','Bank','School','University','Hotel','Park','Mall','Landmark','Museum','Mosque','Church','Health Center','Gas Station','Supermarket','Salon','Sports Club','Theater','Library','Airport','Bus Station'],
+  fr: ['Tout','Restaurant','Café','Pharmacie','Hôpital','Police','Banque','École','Université','Hôtel','Parc','Centre','Monument','Musée','Mosquée','Église','Centre de santé','Station service','Supermarché','Salon','Club sportif','Théâtre','Bibliothèque','Aéroport','Gare routière']
+};
+
+var DISABILITIES = [
+  {key:'wheelchair', ar:'كرسي متحرك', en:'Wheelchair', fr:'Fauteuil roulant', ico:'♿'},
+  {key:'visual',     ar:'ضعف بصري',   en:'Visual imp.', fr:'Malvoyant', ico:'👁'},
+  {key:'hearing',    ar:'ضعف سمعي',   en:'Hearing imp.', fr:'Malentendant', ico:'👂'},
+  {key:'elderly',    ar:'كبار السن',  en:'Elderly',  fr:'Séniors', ico:'👴'},
+  {key:'pregnant',   ar:'حوامل',      en:'Pregnant', fr:'Femmes enceintes', ico:'🤰'},
+  {key:'children',   ar:'أطفال',      en:'Children', fr:'Enfants', ico:'👶'},
+  {key:'women',      ar:'نساء',       en:'Women',    fr:'Femmes', ico:'👩'}
+];
+
+var FEATS = [
+  {key:'ramp',    ar:'منحدر الدخول',  en:'Entry Ramp',    fr:'Rampe', ico:'⛰️'},
+  {key:'park',    ar:'موقف خاص',      en:'Parking',       fr:'Parking', ico:'🅿️'},
+  {key:'toilet',  ar:'دورة مياه',     en:'Accessible WC', fr:'WC', ico:'🚽'},
+  {key:'elev',    ar:'مصعد',          en:'Elevator',      fr:'Ascenseur', ico:'🛗'},
+  {key:'staff',   ar:'موظف مساعد',   en:'Staff Help',    fr:'Personnel', ico:'🙋'},
+  {key:'sign',    ar:'لافتات واضحة', en:'Clear Signs',   fr:'Panneaux', ico:'🔤'},
+];
+
+var T = {
+  ar:{
+    search_ph:'ابحث: مطعم، صيدلية، مخفر...',
+    no_res:'لا توجد نتائج',
+    add_place:'إضافة مكان جديد',
+    place_name:'اسم المكان',
+    gov:'المحافظة',
+    region:'المنطقة',
+    address:'العنوان التفصيلي',
+    cat:'نوع المكان',
+    notes:'ملاحظات (اختياري)',
+    notes_ph:'مثال: المصعد لا يعمل، لا توجد منحدرات...',
+    feats:'جوانب إمكانية الوصول',
+    photos:'الصور',
+    save:'حفظ المكان',
+    go_map:'🧭 خذني إليه',
+    my_places:'أماكني',
+    no_places:'لا توجد أماكن مضافة بعد',
+    rate_places:'اختر مكاناً لتقييمه',
+    ok:'✅ متاح',nok:'❌ غير متاح',avg:'⚠️ جزئي',
+    del:'حذف',del_confirm:'حذف هذا المكان؟',
+    added:'✅ تم إضافة المكان',updated:'✅ تم التحديث',deleted:'🗑️ تم الحذف',
+    org_manage:'إدارة الجمعيات',add_org:'إضافة جمعية',
+    org_name:'اسم الجمعية',org_code:'رمز الدخول',generate:'🎲 توليد',
+    activate:'✅ تفعيل',deactivate:'⛔ إيقاف',
+    reviews_pending:'تقييمات بانتظار المراجعة',
+    approve:'✅ قبول',reject:'❌ رفض',
+    comments_list:'التعليقات الواردة',
+    all_places:'جميع الأماكن',
+    report_sent:'✅ تم إرسال الإبلاغ للمدير',
+    fill_required:'⚠️ يرجى ملء الحقول المطلوبة',
+    invalid_code:'⚠️ رمز الدخول غير صحيح أو موقوف',
+    wrong_cred:'⚠️ بيانات الدخول غير صحيحة',
+    wrong_otp:'⚠️ رمز التحقق غير صحيح',
+  },
+  en:{
+    search_ph:'Search: restaurant, pharmacy, police...',
+    no_res:'No results found',
+    add_place:'Add New Place',
+    place_name:'Place Name',
+    gov:'Governorate',region:'Region',address:'Detailed Address',cat:'Place Type',
+    notes:'Notes (optional)',notes_ph:'e.g. Elevator broken, no ramps...',
+    feats:'Accessibility Features',photos:'Photos',save:'Save Place',
+    go_map:'🧭 Navigate',
+    my_places:'My Places',no_places:'No places added yet',
+    rate_places:'Select a place to rate',
+    ok:'✅ Available',nok:'❌ Not available',avg:'⚠️ Partial',
+    del:'Delete',del_confirm:'Delete this place?',
+    added:'✅ Place added',updated:'✅ Updated',deleted:'🗑️ Deleted',
+    org_manage:'Manage Orgs',add_org:'Add Org',org_name:'Org Name',org_code:'Access Code',generate:'🎲 Generate',
+    activate:'✅ Activate',deactivate:'⛔ Deactivate',
+    reviews_pending:'Pending Reviews',approve:'✅ Approve',reject:'❌ Reject',
+    comments_list:'Incoming Comments',all_places:'All Places',
+    report_sent:'✅ Report sent to admin',fill_required:'⚠️ Please fill required fields',
+    invalid_code:'⚠️ Invalid or suspended code',wrong_cred:'⚠️ Wrong credentials',wrong_otp:'⚠️ Wrong OTP',
+  },
+  fr:{
+    search_ph:'Rechercher: restaurant, pharmacie...',
+    no_res:'Aucun résultat',
+    add_place:'Ajouter un lieu',
+    place_name:'Nom du lieu',gov:'Gouvernorat',region:'Région',address:'Adresse détaillée',cat:'Type de lieu',
+    notes:'Notes (optionnel)',notes_ph:'ex: Ascenseur en panne, pas de rampes...',
+    feats:"Accessibilité",photos:'Photos',save:'Enregistrer',
+    go_map:'🧭 Y aller',
+    my_places:'Mes lieux',no_places:'Aucun lieu ajouté',rate_places:'Choisir un lieu',
+    ok:'✅ Disponible',nok:'❌ Indisponible',avg:'⚠️ Partiel',
+    del:'Supprimer',del_confirm:'Supprimer ce lieu?',
+    added:'✅ Lieu ajouté',updated:'✅ Mis à jour',deleted:'🗑️ Supprimé',
+    org_manage:'Gérer les orgs',add_org:'Ajouter org',org_name:'Nom org',org_code:'Code accès',generate:'🎲 Générer',
+    activate:'✅ Activer',deactivate:'⛔ Suspendre',
+    reviews_pending:'Avis en attente',approve:'✅ Approuver',reject:'❌ Rejeter',
+    comments_list:'Commentaires reçus',all_places:'Tous les lieux',
+    report_sent:'✅ Signalement envoyé',fill_required:'⚠️ Remplir les champs requis',
+    invalid_code:'⚠️ Code invalide ou suspendu',wrong_cred:'⚠️ Identifiants incorrects',wrong_otp:'⚠️ Code OTP incorrect',
+  }
+};
+function t(k){ return (T[lang]&&T[lang][k]) || k; }
+
+// ══════════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════════
+function getPlaces(){ try{return JSON.parse(localStorage.getItem(PLACES_KEY)||'[]');}catch(e){return[];} }
+function savePlaces(p){ localStorage.setItem(PLACES_KEY,JSON.stringify(p)); }
+function getUsers(){ try{return JSON.parse(localStorage.getItem(USERS_KEY)||'[]');}catch(e){return[];} }
+function saveUsers(u){ localStorage.setItem(USERS_KEY,JSON.stringify(u)); }
+function getComments(){ try{return JSON.parse(localStorage.getItem(COMMENTS_KEY)||'[]');}catch(e){return[];} }
+function saveComments(c){ localStorage.setItem(COMMENTS_KEY,JSON.stringify(c)); }
+
+// ══════════════════════════════════════════════
+//  BACK BUTTON — زر الرجوع في الهاتف
+// ══════════════════════════════════════════════
+var screenHistory = [];
+
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  if(currentScreen !== id){
+    screenHistory.push(currentScreen);
+  }
+  currentScreen = id;
+  // دائماً أضف state جديد حتى يلتقط المتصفح زر الرجوع
+  history.pushState(null, '', location.href);
+}
+
+window.addEventListener('popstate', function(){
+  // دائماً أعد pushState لمنع الخروج
+  history.pushState(null, '', location.href);
+
+  if(screenHistory.length > 0){
+    // ارجع للشاشة السابقة
+    var prev = screenHistory.pop();
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+    document.getElementById(prev).classList.add('active');
+    currentScreen = prev;
+  }
+  // إذا لا يوجد تاريخ — لا تخرج، ابقَ في نفس الشاشة
+});
+
+// ادفع state أولي عند التحميل لالتقاط أول ضغطة رجوع
+history.pushState(null, '', location.href);
+
+function showToast(msg, dur){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show');},(dur||2000));
+}
+
+// ══════════════════════════════════════════════
+//  SPLASH → LANG
+// ══════════════════════════════════════════════
+setTimeout(function(){ goScreen('s-lang'); }, 2200);
+
+// ══════════════════════════════════════════════
+//  LANG
+// ══════════════════════════════════════════════
+function setLang(l){
+  lang = l;
+  document.documentElement.lang = l;
+  document.documentElement.dir = l==='ar' ? 'rtl' : 'ltr';
+  goScreen('s-who');
+  applyWhoLabels();
+}
+
+function applyWhoLabels(){
+  var labels = {
+    ar:{wt:'من أنت؟',ws:'اختر نوع دخولك للتطبيق',wv:'زائر',wvs:'أبحث عن أماكن مناسبة لي',wr:'مقيّم / خبير',wrs:'أضيف وأقيّم الأماكن',wa:'مدير / جمعية',was:'إدارة التطبيق والمستخدمين'},
+    en:{wt:'Who are you?',ws:'Choose your access type',wv:'Visitor',wvs:'Looking for accessible places',wr:'Assessor / Expert',wrs:'Add & rate places',wa:'Admin / Association',was:'Manage app & users'},
+    fr:{wt:'Qui êtes-vous?',ws:'Choisissez votre type d\'accès',wv:'Visiteur',wvs:'Je cherche des lieux accessibles',wr:'Évaluateur / Expert',wrs:'Ajouter et évaluer',wa:'Admin / Association',was:'Gérer l\'appli et les utilisateurs'}
+  };
+  var lb = labels[lang];
+  Object.keys(lb).forEach(function(k){ var el=document.getElementById(k); if(el) el.textContent=lb[k]; });
+}
+
+// ══════════════════════════════════════════════
+//  DISABILITY
+// ══════════════════════════════════════════════
+function goDisability(){
+  buildDisGrid();
+  goScreen('s-disability');
+}
+
+function buildDisGrid(){
+  var g = document.getElementById('dis-grid');
+  g.innerHTML = DISABILITIES.map(function(d){
+    return '<div class="dis-card" id="dis-'+d.key+'" onclick="toggleDis(\''+d.key+'\')">'
+      +'<div class="dis-ico">'+d.ico+'</div>'
+      +'<div class="dis-label">'+(d[lang]||d.ar)+'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function toggleDis(key){
+  var idx = selectedDisabilities.indexOf(key);
+  if(idx>-1) selectedDisabilities.splice(idx,1);
+  else selectedDisabilities.push(key);
+  document.querySelectorAll('.dis-card').forEach(function(c){c.classList.remove('selected');});
+  selectedDisabilities.forEach(function(k){
+    var el=document.getElementById('dis-'+k);
+    if(el) el.classList.add('selected');
+  });
+}
+
+// ══════════════════════════════════════════════
+//  VISITOR PAGE
+// ══════════════════════════════════════════════
+var activeGov = 0; // index in GOVS_AR, 0=all
+var activeCat = 0;
+
+function goVisitor(){
+  goScreen('s-visitor');
+  buildFilters();
+  doSearch();
+  document.getElementById('vis-search').placeholder = t('search_ph');
+}
+
+function buildFilters(){
+  var gf=document.getElementById('gov-filter');
+  gf.innerHTML=GOVS[lang].map(function(g,i){
+    return '<div class="f-chip'+(i===activeGov?' active':'')+'" onclick="setGov('+i+')">'+g+'</div>';
+  }).join('');
+  rebuildCatFilter();
+}
+
+function rebuildCatFilter(){
+  var cf=document.getElementById('cat-filter');
+  if(!cf)return;
+  cf.innerHTML=CATS[lang].map(function(c,i){
+    return '<div class="f-chip'+(i===activeCat?' active':'')+'" onclick="setCat('+i+')">'+c+'</div>';
+  }).join('');
+}
+
+function setGov(i){
+  activeGov=i;
+  document.querySelectorAll('#gov-filter .f-chip').forEach(function(c,j){c.classList.toggle('active',j===i);});
+  doSearch();
+}
+function setCat(i){
+  activeCat=i;
+  document.querySelectorAll('#cat-filter .f-chip').forEach(function(c,j){c.classList.toggle('active',j===i);});
+  doSearch();
+}
+
+function doSearch(){
+  var q = (document.getElementById('vis-search').value||'').trim().toLowerCase();
+  var places = getPlaces();
+
+  // فلتر المحافظة
+  if(activeGov>0){
+    var govAr = GOVS_AR[activeGov];
+    places = places.filter(function(p){ return p.gov===govAr; });
+  }
+  // فلتر الفئة
+  if(activeCat>0){
+    var catAr = CATS.ar[activeCat];
+    places = places.filter(function(p){ return p.cat===catAr; });
+  }
+  // بحث نصي
+  if(q){
+    places = places.filter(function(p){
+      return (p.name||'').toLowerCase().includes(q)
+        || (p.cat||'').toLowerCase().includes(q)
+        || (p.gov||'').toLowerCase().includes(q)
+        || (p.region||'').toLowerCase().includes(q)
+        || (p.address||'').toLowerCase().includes(q);
+    });
+  }
+
+  document.getElementById('res-count').textContent = places.length;
+  var el = document.getElementById('vis-places');
+  if(!places.length){
+    el.innerHTML='<div class="empty-vis"><span>🔍</span><div style="font-size:14px;font-weight:700">'+t('no_res')+'</div></div>';
+    return;
+  }
+  el.innerHTML = places.map(function(p){ return placeCard(p); }).join('');
+}
+
+function placeCard(p){
+  var featsHtml = '';
+  if(p.feats){
+    var keys = Object.keys(p.feats);
+    featsHtml = keys.slice(0,3).map(function(k){
+      var f = FEATS.find(function(x){return x.key===k;});
+      var v = p.feats[k];
+      var cls = v==='ok'?'good':v==='nok'?'bad':'';
+      return '<span class="ptag '+(cls)+'">'+(f?f.ico+' '+f[lang]:k)+'</span>';
+    }).join('');
+  }
+  return '<div class="place-card" onclick="openDetail(\''+p.id+'\')">'
+    +'<div class="place-card-top">'
+      +'<div class="place-av">'+catIco(p.cat)+'</div>'
+      +'<div style="flex:1">'
+        +'<div class="place-name">'+p.name+'</div>'
+        +'<div class="place-meta">📍 '+p.gov+(p.region?' — '+p.region:'')+'</div>'
+        +(p.address?'<div class="place-meta">'+p.address+'</div>':'')
+      +'</div>'
+    +'</div>'
+    +(featsHtml?'<div class="place-tags" style="margin-top:8px">'+featsHtml+'</div>':'')
+  +'</div>';
+}
+
+function catIco(cat){
+  var map={
+    'مطعم':'🍽️','مقهى':'☕','صيدلية':'💊','مستشفى':'🏥','مخفر':'🚔',
+    'بنك':'🏦','مدرسة':'🎓','جامعة':'🎓','فندق':'🏨','حديقة':'🌳',
+    'مول':'🛍️','معلم أثري':'🏛️','متحف':'🖼️','مسجد':'🕌','كنيسة':'⛪',
+    'مركز صحي':'🩺','محطة وقود':'⛽','سوبرماركت':'🛒','صالون':'💇',
+    'نادي رياضي':'🏋️','مسرح':'🎭','مكتبة':'📚','مطار':'✈️','محطة باص':'🚌'
+  };
+  return map[cat]||'🏢';
+}
+
+function openNearMe(){
+  if(!navigator.geolocation){showToast('⚠️ الموقع غير متاح');return;}
+  showToast('⏳ جاري تحديد موقعك...');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=pos.coords.latitude,lng=pos.coords.longitude;
+    var q = (document.getElementById('vis-search').value||'مكان').trim();
+    window.open('https://www.google.com/maps/search/'+encodeURIComponent(q)+'/@'+lat+','+lng+',15z','_blank');
+  },function(){showToast('⚠️ تعذّر تحديد الموقع');});
+}
+
+// ══════════════════════════════════════════════
+//  PLACE DETAIL
+// ══════════════════════════════════════════════
+function openDetail(id){
+  var p = getPlaces().find(function(x){return x.id===id;});
+  if(!p) return;
+  activeDetailId = id;
+  fromScreen = currentScreen;
+
+  var backBtn = document.getElementById('detail-back');
+  backBtn.onclick = function(){ goScreen(fromScreen); };
+
+  document.getElementById('detail-title').textContent = p.name;
+  var body = document.getElementById('detail-body');
+
+  // صور
+  var photosHtml = '';
+  if(p.photos && p.photos.length){
+    photosHtml = '<div class="detail-imgs-row">'
+      +p.photos.map(function(ph){
+        return '<img class="detail-thumb" src="'+ph+'" onerror="this.style.display=\'none\'">';
+      }).join('')
+    +'</div>';
+  } else {
+    photosHtml = '<div style="width:100%;height:120px;background:var(--card2);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:14px">'+catIco(p.cat)+'</div>';
+  }
+
+  // جوانب
+  var featsHtml = '';
+  if(p.feats && Object.keys(p.feats).length){
+    featsHtml = '<div class="detail-section"><div class="detail-section-title">'+t('feats')+'</div>'
+      +FEATS.map(function(f){
+        var v = p.feats[f.key];
+        if(!v) return '';
+        var lbl = v==='ok'?t('ok'):v==='nok'?t('nok'):t('avg');
+        var cls = v==='ok'?'good':v==='nok'?'bad':'avg';
+        return '<div class="feat-row"><span class="feat-label">'+f.ico+' '+f[lang]+'</span><span class="feat-status '+cls+'">'+lbl+'</span></div>';
+      }).join('')
+    +'</div>';
+  }
+
+  body.innerHTML = photosHtml
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+      +'<div style="font-size:1.8rem">'+catIco(p.cat)+'</div>'
+      +'<div><div style="font-size:18px;font-weight:900">'+p.name+'</div>'
+        +'<div style="font-size:13px;color:var(--text2)">📍 '+p.gov+(p.region?' — '+p.region:'')+'</div>'
+        +(p.address?'<div style="font-size:12px;color:var(--muted)">'+p.address+'</div>':'')
+      +'</div>'
+    +'</div>'
+    +(featsHtml||'')
+    +(p.notes?'<div class="detail-section"><div class="detail-section-title">ملاحظات</div><div class="detail-note" id="detail-notes">'+p.notes+'</div></div>':'')
+    +'<div style="font-size:11px;color:var(--muted);margin-bottom:12px">أضافه: '+(p.orgName||'مجهول')+' — '+p.time+'</div>'
+    +'<button class="nav-btn" onclick="navigateTo('+p.lat+','+p.lng+')">'+t('go_map')+'</button>'
+    +(canEdit()
+      ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'
+          +'<button onclick="editPlaceNotes(\''+p.id+'\')" style="padding:12px;background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.3);border-radius:var(--r);color:var(--gold);font-weight:800;cursor:pointer">✏️ تعديل</button>'
+          +'<button onclick="deletePlace(\''+p.id+'\')" style="padding:12px;background:rgba(255,23,68,.1);border:1px solid rgba(255,23,68,.2);border-radius:var(--r);color:var(--red);font-weight:800;cursor:pointer">🗑️ حذف</button>'
+        +'</div>'
+      : '');
+
+  goScreen('s-detail');
+}
+
+function editPlaceNotes(id){
+  var p=getPlaces().find(function(x){return x.id===id;});
+  if(!p)return;
+  var body=document.getElementById('detail-body');
+  var catOptions=CATS.ar.slice(1).map(function(c){
+    return '<option value="'+c+'"'+(p.cat===c?' selected':'')+'>'+c+'</option>';
+  }).join('');
+  var govOptions=GOVS_AR.slice(1).map(function(g){
+    return '<option value="'+g+'"'+(p.gov===g?' selected':'')+'>'+g+'</option>';
+  }).join('');
+  body.innerHTML=
+    '<div style="padding:4px">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+      +'<button onclick="openDetail(\''+id+'\')" style="background:none;border:none;color:var(--gold);font-size:20px;cursor:pointer">→</button>'
+      +'<div style="font-size:15px;font-weight:900">✏️ تعديل: '+p.name+'</div>'
+    +'</div>'
+    +'<div class="inp-label">اسم المكان</div>'
+    +'<input class="inp" id="ed-name" type="text" value="'+p.name+'">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+      +'<div><div class="inp-label">المحافظة</div><select class="inp" id="ed-gov">'+govOptions+'</select></div>'
+      +'<div><div class="inp-label">النوع</div><select class="inp" id="ed-cat">'+catOptions+'</select></div>'
+    +'</div>'
+    +'<div class="inp-label">المنطقة</div>'
+    +'<input class="inp" id="ed-region" type="text" value="'+(p.region||'')+'">'
+    +'<div class="inp-label">العنوان</div>'
+    +'<input class="inp" id="ed-address" type="text" value="'+(p.address||'')+'">'
+    +'<div class="inp-label">ملاحظات</div>'
+    +'<textarea class="inp" id="ed-notes" style="min-height:80px">'+(p.notes||'')+'</textarea>'
+    +'<div class="inp-label">جوانب إمكانية الوصول</div>'
+    +'<div class="feat-grid" id="ed-feats">'
+      +FEATS.map(function(f){
+        var v=p.feats&&p.feats[f.key]?p.feats[f.key]:'';
+        return '<div class="feat-btn'+(v?' '+v:'')+'" id="edfeat-'+f.key+'" onclick="cycleEditFeat(\''+f.key+'\',\''+id+'\')">'
+          +'<div class="feat-ico">'+f.ico+'</div>'
+          +'<div class="feat-name">'+f[lang]+'</div>'
+        +'</div>';
+      }).join('')
+    +'</div>'
+    +'<button class="btn-gold" onclick="saveEdit(\''+id+'\')" style="margin-top:8px">💾 حفظ التعديلات</button>'
+    +'<button onclick="openDetail(\''+id+'\')" class="btn-outline" style="margin-top:8px">إلغاء</button>'
+    +'</div>';
+  // نسخ feats الحالية للتعديل
+  window._editFeats = Object.assign({}, p.feats||{});
+}
+
+function cycleEditFeat(key){
+  var states=['','ok','avg','nok'];
+  var cur=window._editFeats[key]||'';
+  var idx=states.indexOf(cur);
+  var next=states[(idx+1)%states.length];
+  if(next==='') delete window._editFeats[key]; else window._editFeats[key]=next;
+  var btn=document.getElementById('edfeat-'+key);
+  if(btn) btn.className='feat-btn'+(next?' '+next:'');
+}
+
+function saveEdit(id){
+  var places=getPlaces();
+  var idx=places.findIndex(function(p){return p.id===id;});
+  if(idx===-1)return;
+  places[idx].name=(document.getElementById('ed-name').value||'').trim()||places[idx].name;
+  places[idx].gov=document.getElementById('ed-gov').value;
+  places[idx].cat=document.getElementById('ed-cat').value;
+  places[idx].region=(document.getElementById('ed-region').value||'').trim();
+  places[idx].address=(document.getElementById('ed-address').value||'').trim();
+  places[idx].notes=(document.getElementById('ed-notes').value||'').trim();
+  places[idx].feats=Object.assign({},window._editFeats);
+  savePlaces(places);
+  showToast(t('updated'));
+  openDetail(id);
+}
+
+function navigateTo(lat,lng){
+  if(!lat||!lng){showToast('⚠️ لا يوجد موقع محدد');return;}
+  window.open('https://www.google.com/maps/dir/?api=1&destination='+lat+','+lng,'_blank');
+}
+
+function deletePlace(id){
+  if(!confirm(t('del_confirm')))return;
+  var places=getPlaces().filter(function(p){return p.id!==id;});
+  savePlaces(places);
+  showToast(t('deleted'));
+  goScreen(fromScreen);
+  if(fromScreen==='s-resident') resTab('my');
+}
+
+// ══════════════════════════════════════════════
+//  COMMENT / REPORT
+// ══════════════════════════════════════════════
+function openComment(){
+  document.getElementById('modal-comment').style.display='flex';
+}
+function closeComment(){
+  document.getElementById('modal-comment').style.display='none';
+}
+function submitComment(){
+  var txt=(document.getElementById('cmt-text').value||'').trim();
+  var phone=(document.getElementById('cmt-phone').value||'').trim();
+  var email=(document.getElementById('cmt-email').value||'').trim();
+  if(!txt||!phone){showToast(t('fill_required'));return;}
+  var comments=getComments();
+  comments.push({id:Date.now(),placeId:activeDetailId,text:txt,phone:phone,email:email,time:new Date().toLocaleString('ar-LB'),status:'pending'});
+  saveComments(comments);
+  closeComment();
+  document.getElementById('cmt-text').value='';
+  document.getElementById('cmt-phone').value='';
+  document.getElementById('cmt-email').value='';
+  showToast(t('report_sent'));
+}
+
+// ══════════════════════════════════════════════
+//  RESIDENT LOGIN
+// ══════════════════════════════════════════════
+function goResLogin(){
+  var err=document.getElementById('err-res');
+  if(err) err.style.display='none';
+  document.getElementById('res-orgname').value='';
+  document.getElementById('res-code').value='';
+  goScreen('s-reslogin');
+}
+
+function resLogin(){
+  var orgname=(document.getElementById('res-orgname').value||'').trim();
+  var code=(document.getElementById('res-code').value||'').trim().toUpperCase();
+  var err=document.getElementById('err-res');
+  err.style.display='none';
+  if(!orgname){err.textContent=t('fill_required');err.style.display='block';return;}
+  if(!code){err.textContent=t('fill_required');err.style.display='block';return;}
+  var users=getUsers();
+  var org=users.find(function(u){return u.code===code&&u.role==='org';});
+  if(!org){err.textContent=t('invalid_code');err.style.display='block';return;}
+  if(org.active===false){err.textContent=t('invalid_code');err.style.display='block';return;}
+  currentUser={name:orgname,role:'org',orgName:orgname,code:code};
+  goScreen('s-resident');
+  document.getElementById('res-welcome').textContent='أهلاً، '+orgname;
+  document.getElementById('res-orgbadge').textContent='🤝 '+orgname;
+  resTab('add');
+}
+
+function resStep1(){} function resStep2(){}
+
+function updateDots(containerId, active, total){
+  var c=document.getElementById(containerId);
+  if(!c)return;
+  c.innerHTML='';
+  for(var i=0;i<total;i++){
+    var d=document.createElement('div');
+    d.className='dot'+(i===active?' active':'');
+    c.appendChild(d);
+  }
+}
+
+// ══════════════════════════════════════════════
+//  RESIDENT DASHBOARD
+// ══════════════════════════════════════════════
+var activeResTab='add';
+
+function resTab(tab){
+  activeResTab=tab;
+  ['add','my','rate'].forEach(function(t){
+    var btn=document.getElementById('rtab-'+t);
+    if(btn) btn.classList.toggle('active',t===tab);
+  });
+  var c=document.getElementById('res-content');
+  if(tab==='add') renderAddForm(c);
+  else if(tab==='my') renderMyPlaces(c);
+  else if(tab==='rate') renderRatePlaces(c);
+}
+
+// ── ADD FORM ──
+var addFeats={};
+var addPhotos=[];
+var addLat=null, addLng=null;
+
+function renderAddForm(c){
+  addFeats={};addPhotos=[];addLat=null;addLng=null;
+  var catOptions = CATS.ar.slice(1).map(function(cat){
+    return '<option value="'+cat+'">'+cat+'</option>';
+  }).join('');
+  var govOptions = GOVS_AR.slice(1).map(function(g){
+    return '<option value="'+g+'">'+g+'</option>';
+  }).join('');
+
+  c.innerHTML='<div class="add-form">'
+    +'<div class="add-form section-label">'+t('add_place')+'</div>'
+    +'<div class="inp-label">'+t('place_name')+' *</div>'
+    +'<input class="inp" id="af-name" type="text" placeholder="مثال: مطعم الزيتونة">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+      +'<div><div class="inp-label">'+t('gov')+' *</div><select class="inp" id="af-gov">'+govOptions+'</select></div>'
+      +'<div>'
+        +'<div class="inp-label">'+t('cat')+' *</div>'
+        +'<select class="inp" id="af-cat">'+catOptions+'</select>'
+        +'<div style="display:flex;gap:6px;margin-top:6px">'
+          +'<input class="inp" id="af-newcat" type="text" placeholder="نوع جديد..." style="margin-bottom:0;flex:1">'
+          +'<button onclick="addNewCat()" style="padding:10px 14px;background:rgba(255,193,7,.15);border:2px solid rgba(255,193,7,.3);border-radius:12px;color:var(--gold);font-weight:900;cursor:pointer;white-space:nowrap">+ إضافة</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div class="inp-label">'+t('region')+'</div>'
+    +'<input class="inp" id="af-region" type="text" placeholder="مثال: الاشرفية، الحمرا...">'
+    +'<div class="inp-label">'+t('address')+'</div>'
+    +'<input class="inp" id="af-address" type="text" placeholder="العنوان التفصيلي">'
+    +'<div class="inp-label" style="margin-top:4px">📍 الموقع الجغرافي</div>'
+    +'<button onclick="getMyLocation()" style="width:100%;padding:11px;background:rgba(255,193,7,.1);border:2px dashed rgba(255,193,7,.4);border-radius:12px;color:var(--gold);font-weight:800;font-size:13px;cursor:pointer;margin-bottom:10px" id="loc-btn">📍 تحديد موقعي الحالي</button>'
+    +'<div class="add-form section-label">'+t('feats')+'</div>'
+    +'<div class="feat-grid" id="af-feats">'
+      +FEATS.map(function(f){
+        return '<div class="feat-btn" id="afeat-'+f.key+'" onclick="cycleFeat(\''+f.key+'\')">'
+          +'<div class="feat-ico">'+f.ico+'</div>'
+          +'<div class="feat-name">'+(f[lang]||f.ar)+'</div>'
+        +'</div>';
+      }).join('')
+    +'</div>'
+    +'<div class="add-form section-label">'+t('notes')+'</div>'
+    +'<textarea class="inp" id="af-notes" placeholder="'+t('notes_ph')+'"></textarea>'
+    +'<div class="add-form section-label">'+t('photos')+'</div>'
+    +'<div id="af-photos-row" style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;flex-wrap:wrap"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+      +'<label style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:rgba(255,193,7,.08);border:2px dashed rgba(255,193,7,.3);border-radius:12px;cursor:pointer;font-size:13px;font-weight:800;color:var(--gold);text-align:center">'
+        +'<span style="font-size:1.8rem">📷</span>كاميرا'
+        +'<input type="file" accept="image/*" capture="environment" onchange="addPhoto(this)" style="display:none">'
+      +'</label>'
+      +'<label style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:rgba(100,100,255,.08);border:2px dashed rgba(100,100,255,.3);border-radius:12px;cursor:pointer;font-size:13px;font-weight:800;color:#8888ff;text-align:center">'
+        +'<span style="font-size:1.8rem">🖼️</span>المعرض'
+        +'<input type="file" accept="image/*" onchange="addPhoto(this)" style="display:none">'
+      +'</label>'
+    +'</div>'
+    +'<button class="btn-gold" onclick="savePlace()" style="margin-top:16px">'+t('save')+'</button>'
+  +'</div>';
+}
+
+function cycleFeat(key){
+  var states=['','ok','avg','nok'];
+  var cur=addFeats[key]||'';
+  var idx=states.indexOf(cur);
+  var next=states[(idx+1)%states.length];
+  if(next==='') delete addFeats[key]; else addFeats[key]=next;
+  var btn=document.getElementById('afeat-'+key);
+  btn.className='feat-btn'+(next?' '+next:'');
+}
+
+function getMyLocation(){
+  if(!navigator.geolocation){showToast('⚠️ غير متاح');return;}
+  showToast('⏳ جاري التحديد...');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    addLat=pos.coords.latitude; addLng=pos.coords.longitude;
+    document.getElementById('loc-btn').textContent='✅ تم التحديد ('+addLat.toFixed(4)+', '+addLng.toFixed(4)+')';
+    document.getElementById('loc-btn').style.borderColor='var(--green)';
+    document.getElementById('loc-btn').style.color='var(--green)';
+  },function(){showToast('⚠️ تعذّر التحديد');});
+}
+
+function addNewCat(){
+  var inp=document.getElementById('af-newcat');
+  var val=(inp.value||'').trim();
+  if(!val){showToast('⚠️ اكتب اسم النوع أولاً');return;}
+  // أضفه لمصفوفة الفئات
+  if(CATS.ar.indexOf(val)===-1){
+    CATS.ar.push(val);
+    CATS.en.push(val);
+    CATS.fr.push(val);
+  }
+  // حدّث القائمة المنسدلة
+  var sel=document.getElementById('af-cat');
+  var exists=false;
+  for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===val){exists=true;break;} }
+  if(!exists){ var opt=document.createElement('option'); opt.value=val; opt.textContent=val; sel.appendChild(opt); }
+  sel.value=val;
+  inp.value='';
+  showToast('✅ تمت إضافة النوع: '+val);
+}
+
+function addPhoto(input){
+  var file=input.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    addPhotos.push(e.target.result);
+    var idx=addPhotos.length-1;
+    var row=document.getElementById('af-photos-row');
+    var wrap=document.createElement('div');
+    wrap.style.cssText='position:relative;flex-shrink:0;';
+    var img=document.createElement('img');
+    img.src=e.target.result;
+    img.style.cssText='width:72px;height:72px;border-radius:10px;object-fit:cover;display:block;';
+    var delBtn=document.createElement('button');
+    delBtn.textContent='✕';
+    delBtn.style.cssText='position:absolute;top:-6px;left:-6px;width:20px;height:20px;border-radius:50%;background:#FF1744;border:none;color:#fff;font-size:11px;font-weight:900;cursor:pointer;';
+    delBtn.onclick=function(){addPhotos.splice(idx,1);wrap.remove();};
+    wrap.appendChild(img);wrap.appendChild(delBtn);
+    row.appendChild(wrap);
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function savePlace(){
+  var name=(document.getElementById('af-name').value||'').trim();
+  var gov=document.getElementById('af-gov').value;
+  var cat=document.getElementById('af-cat').value;
+  if(!name){showToast(t('fill_required'));return;}
+  var places=getPlaces();
+  places.push({
+    id:'p'+Date.now(),
+    name:name,gov:gov,cat:cat,
+    region:(document.getElementById('af-region').value||'').trim(),
+    address:(document.getElementById('af-address').value||'').trim(),
+    notes:(document.getElementById('af-notes').value||'').trim(),
+    feats:Object.assign({},addFeats),
+    photos:addPhotos.slice(),
+    lat:addLat,lng:addLng,
+    orgName:currentUser?currentUser.orgName:'',
+    addedBy:currentUser?currentUser.email:'',
+    time:new Date().toLocaleString('ar-LB'),
+    status:'approved'
+  });
+  savePlaces(places);
+  showToast(t('added'));
+  resTab('my');
+}
+
+// ── MY PLACES ──
+function renderMyPlaces(c){
+  var places=getPlaces().filter(function(p){
+    return isAdmin() || (currentUser && p.addedBy===currentUser.email);
+  });
+  if(!places.length){c.innerHTML='<div class="empty-vis"><span>📍</span><div>'+t('no_places')+'</div></div>';return;}
+  c.innerHTML='<div style="padding:12px">'
+    +(isAdmin()?'<div style="font-size:12px;color:var(--gold);font-weight:800;margin-bottom:8px">👑 عرض كل الأماكن ('+places.length+')</div>':'')
+    +places.map(function(p){return placeCard(p);}).join('')
+  +'</div>';
+}
+
+// ── RATE TAB ──
+function renderRatePlaces(c){
+  var places=getPlaces();
+  if(!places.length){c.innerHTML='<div class="empty-vis"><span>⭐</span><div>'+t('rate_places')+'</div></div>';return;}
+  c.innerHTML='<div style="padding:12px">'+places.map(function(p){
+    return '<div class="place-card" onclick="openRateModal(\''+p.id+'\')">'
+      +'<div class="place-card-top">'
+        +'<div class="place-av">'+catIco(p.cat)+'</div>'
+        +'<div style="flex:1"><div class="place-name">'+p.name+'</div>'
+        +'<div class="place-meta">📍 '+p.gov+(p.region?' — '+p.region:'')+'</div></div>'
+        +'<div style="color:var(--gold);font-size:13px;font-weight:800">تقييم ←</div>'
+      +'</div>'
+    +'</div>';
+  }).join('')+'</div>';
+}
+
+var ratingPlaceId=null;
+var ratingFeats={};
+
+function openRateModal(id){
+  ratingPlaceId=id; ratingFeats={};
+  var p=getPlaces().find(function(x){return x.id===id;});
+  if(!p)return;
+  // نفتح نموذج تقييم inline
+  var c=document.getElementById('res-content');
+  c.innerHTML='<div class="add-form">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+      +'<button onclick="resTab(\'rate\')" style="background:none;border:none;color:var(--gold);font-size:20px;cursor:pointer">→</button>'
+      +'<div style="font-size:15px;font-weight:900">'+p.name+'</div>'
+    +'</div>'
+    +'<div class="add-form section-label">'+t('feats')+'</div>'
+    +'<div class="feat-grid" id="rf-feats">'
+      +FEATS.map(function(f){
+        var cur=(p.feats&&p.feats[f.key])||'';
+        return '<div class="feat-btn'+(cur?' '+cur:'')+'" id="rfeat-'+f.key+'" onclick="cycleRateFeat(\''+f.key+'\')">'
+          +'<div class="feat-ico">'+f.ico+'</div>'
+          +'<div class="feat-name">'+(f[lang]||f.ar)+'</div>'
+        +'</div>';
+      }).join('')
+    +'</div>'
+    +'<div class="add-form section-label">'+t('notes')+'</div>'
+    +'<textarea class="inp" id="rf-notes" placeholder="'+t('notes_ph')+'">'+((p.notes)||'')+'</textarea>'
+    +'<button class="btn-gold" onclick="saveRating()">'+t('save')+'</button>'
+  +'</div>';
+  // نسخ الـ feats الحالية
+  if(p.feats) ratingFeats=Object.assign({},p.feats);
+}
+
+function cycleRateFeat(key){
+  var states=['','ok','avg','nok'];
+  var cur=ratingFeats[key]||'';
+  var idx=states.indexOf(cur);
+  var next=states[(idx+1)%states.length];
+  if(next==='') delete ratingFeats[key]; else ratingFeats[key]=next;
+  var btn=document.getElementById('rfeat-'+key);
+  btn.className='feat-btn'+(next?' '+next:'');
+}
+
+function saveRating(){
+  var places=getPlaces();
+  var idx=places.findIndex(function(p){return p.id===ratingPlaceId;});
+  if(idx===-1)return;
+  places[idx].feats=Object.assign({},ratingFeats);
+  var notes=(document.getElementById('rf-notes').value||'').trim();
+  if(notes) places[idx].notes=notes;
+  savePlaces(places);
+  showToast(t('updated'));
+  resTab('rate');
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN LOGIN
+// ══════════════════════════════════════════════
+function goAdminLogin(){
+  var e1=document.getElementById('err-adm');
+  if(e1) e1.style.display='none';
+  var u=document.getElementById('adm-user'); if(u) u.value='';
+  var p=document.getElementById('adm-pass'); if(p) p.value='';
+  goScreen('s-adminlogin');
+}
+
+function admStep1(){
+  var user=(document.getElementById('adm-user').value||'').trim();
+  var pass=document.getElementById('adm-pass').value||'';
+  var err=document.getElementById('err-adm');
+  err.style.display='none';
+  if(btoa(user)!=='RE1JTkA=' || !_chkPass(pass)){
+    err.textContent=t('wrong_cred');err.style.display='block';return;
+  }
+  currentUser={name:'المدير',role:'admin'};
+  goScreen('s-admin');
+  adminTab('orgs');
+}
+function admStep2(){} // legacy - not used
+
+// ══════════════════════════════════════════════
+//  ADMIN DASHBOARD
+// ══════════════════════════════════════════════
+var activeAdminTab='orgs';
+function adminTab(tab){
+  activeAdminTab=tab;
+  document.querySelectorAll('.admin-tab').forEach(function(b,i){
+    b.classList.toggle('active',['orgs','reviews','comments','places'][i]===tab);
+  });
+  var c=document.getElementById('admin-content');
+  if(tab==='orgs')     renderAdminOrgs(c);
+  else if(tab==='reviews')  renderAdminReviews(c);
+  else if(tab==='comments') renderAdminComments(c);
+  else if(tab==='places')   renderAdminPlaces(c);
+}
+
+// ── ORGS ──
+function renderAdminOrgs(c){
+  c.innerHTML=''
+    +'<div style="background:var(--card);border:2px solid rgba(255,193,7,.2);border-radius:var(--r);padding:16px;margin-bottom:16px">'
+      +'<div style="font-size:14px;font-weight:900;color:var(--gold);margin-bottom:12px">➕ '+t('add_org')+'</div>'
+      +'<div class="inp-label">'+t('org_name')+'</div>'
+      +'<input class="inp" id="ao-name" type="text" placeholder="اسم الجمعية">'
+      +'<div class="inp-label">'+t('org_code')+'</div>'
+      +'<div style="display:flex;gap:8px;margin-bottom:8px">'
+        +'<input class="inp" id="ao-code" type="text" placeholder="ORG-XXXX-XXXX" style="flex:1;margin-bottom:0;letter-spacing:1px;color:var(--gold);font-weight:800">'
+        +'<button onclick="generateCode()" style="padding:12px 14px;background:rgba(255,193,7,.1);border:2px solid rgba(255,193,7,.3);border-radius:12px;color:var(--gold);font-weight:800;cursor:pointer;white-space:nowrap">'+t('generate')+'</button>'
+      +'</div>'
+      +'<button class="btn-gold" onclick="addOrg()">إضافة الجمعية</button>'
+    +'</div>'
+    +'<div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:10px" id="orgs-count-label"></div>'
+    +'<div id="orgs-list-wrap"></div>';
+  renderOrgsList();
+}
+
+function renderOrgsList(){
+  var users=getUsers();
+  var label=document.getElementById('orgs-count-label');
+  var wrap=document.getElementById('orgs-list-wrap');
+  if(!label||!wrap) return;
+  label.textContent='الجمعيات المسجّلة ('+users.length+')';
+  wrap.innerHTML=users.length
+    ? users.map(function(u,i){ return orgCard(u,i); }).join('')
+    : '<div style="text-align:center;color:var(--muted);padding:30px;font-size:14px">لا توجد جمعيات بعد</div>';
+}
+
+function orgCard(u,i){
+  var active=u.active!==false;
+  return '<div class="org-card '+(active?'active-org':'inactive-org')+'">'
+    +'<div class="org-row">'
+      +'<div style="flex:1">'
+        +'<div style="font-size:14px;font-weight:900">'+u.name+'</div>'
+        +'<div style="font-family:monospace;font-size:13px;color:var(--gold);letter-spacing:1px;margin-top:3px">'+u.code+'</div>'
+      +'</div>'
+      +'<span class="badge '+(active?'badge-green':'badge-red')+'">'+(active?'✅ فعّال':'⛔ موقوف')+'</span>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:10px">'
+      +'<button onclick="toggleOrg('+i+')" style="flex:1;padding:9px;border-radius:10px;border:none;font-weight:800;font-size:12px;cursor:pointer;background:'+(active?'rgba(255,23,68,.1)':'rgba(0,200,83,.1)')+';color:'+(active?'var(--red)':'var(--green)')+'">'+( active?t('deactivate'):t('activate'))+'</button>'
+      +'<button onclick="copyCode(\''+u.code+'\')" style="padding:9px 14px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,193,7,.08);color:var(--gold);">📋</button>'
+      +'<button onclick="delOrg('+i+')" style="padding:9px 14px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,23,68,.08);color:var(--red);">🗑️</button>'
+    +'</div>'
+  +'</div>';
+}
+
+function generateCode(){
+  var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code='ORG-';
+  for(var i=0;i<4;i++) code+=c[Math.floor(Math.random()*c.length)];
+  code+='-';
+  for(var i=0;i<4;i++) code+=c[Math.floor(Math.random()*c.length)];
+  document.getElementById('ao-code').value=code;
+}
+
+function copyCode(code){
+  navigator.clipboard&&navigator.clipboard.writeText(code).then(function(){ showToast('📋 تم نسخ: '+code); });
+}
+
+function addOrg(){
+  var nameEl=document.getElementById('ao-name');
+  var codeEl=document.getElementById('ao-code');
+  if(!nameEl||!codeEl){showToast('⚠️ خطأ في الواجهة');return;}
+  var name=(nameEl.value||'').trim();
+  var code=(codeEl.value||'').trim().toUpperCase();
+  if(!name){showToast('⚠️ أدخل اسم الجمعية');return;}
+  if(!code){showToast('⚠️ أدخل الرمز أو اضغط توليد');return;}
+  var users=getUsers();
+  if(users.find(function(u){return u.code===code;})){showToast('⚠️ الرمز مستخدم مسبقاً');return;}
+  users.push({name:name,code:code,role:'org',active:true});
+  saveUsers(users);
+  showToast('✅ تمت إضافة '+name+' — الرمز: '+code);
+  renderOrgsList();
+}
+
+function toggleOrg(i){
+  var users=getUsers();
+  users[i].active=!users[i].active;
+  saveUsers(users);
+  renderOrgsList();
+  showToast(users[i].active?'✅ تم التفعيل':'⛔ تم الإيقاف');
+}
+
+function delOrg(i){
+  if(!confirm('حذف هذه الجمعية؟'))return;
+  var users=getUsers(); users.splice(i,1); saveUsers(users);
+  showToast(t('deleted'));
+  renderOrgsList();
+}
+
+// ── REVIEWS (all places for admin review) ──
+function renderAdminReviews(c){
+  var places=getPlaces();
+  if(!places.length){c.innerHTML='<div class="empty-vis"><span>📋</span><div>لا توجد تقييمات</div></div>';return;}
+  c.innerHTML=places.map(function(p){
+    return '<div class="review-card">'
+      +'<div style="font-size:14px;font-weight:900">'+p.name+'</div>'
+      +'<div style="font-size:12px;color:var(--text2)">📍 '+p.gov+(p.region?' — '+p.region:'')+' | '+p.cat+'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:4px">أضافه: '+(p.orgName||'؟')+' — '+p.time+'</div>'
+      +(p.notes?'<div style="font-size:12px;background:var(--card2);border-radius:8px;padding:8px;margin-top:8px">'+p.notes+'</div>':'')
+      +'<button onclick="openDetail(\''+p.id+'\')" style="margin-top:10px;padding:8px 16px;background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.3);border-radius:50px;color:var(--gold);font-size:12px;font-weight:800;cursor:pointer">عرض التفاصيل</button>'
+    +'</div>';
+  }).join('');
+}
+
+// ── COMMENTS ──
+function renderAdminComments(c){
+  var comments=getComments();
+  if(!comments.length){c.innerHTML='<div class="empty-vis"><span>💬</span><div>لا توجد تعليقات</div></div>';return;}
+  c.innerHTML=comments.map(function(cm,i){
+    var p=getPlaces().find(function(x){return x.id===cm.placeId;});
+    return '<div class="review-card">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between">'
+        +'<div style="font-size:13px;font-weight:900">'+(p?p.name:'مكان محذوف')+'</div>'
+        +'<span class="badge '+(cm.status==='pending'?'badge-gold':'badge-green')+'">'+(cm.status==='pending'?'⏳ معلّق':'✅ مراجع')+'</span>'
+      +'</div>'
+      +'<div style="font-size:13px;margin:8px 0;color:var(--text2)">'+cm.text+'</div>'
+      +'<div style="font-size:12px;color:var(--muted)">📞 '+cm.phone+(cm.email?' | 📧 '+cm.email:'')+'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:4px">'+cm.time+'</div>'
+      +(cm.status==='pending'
+        ?'<div style="display:flex;gap:8px;margin-top:10px">'
+          +'<button onclick="resolveComment('+i+')" style="flex:1;padding:8px;background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.3);border-radius:50px;color:var(--green);font-size:12px;font-weight:800;cursor:pointer">✅ تمت المراجعة</button>'
+          +'<button onclick="delComment('+i+')" style="padding:8px 14px;background:rgba(255,23,68,.08);border:none;border-radius:50px;color:var(--red);font-size:12px;cursor:pointer">🗑️</button>'
+        +'</div>':'')
+    +'</div>';
+  }).join('');
+}
+
+function resolveComment(i){
+  var c=getComments(); c[i].status='resolved'; saveComments(c);
+  renderAdminComments(document.getElementById('admin-content'));
+}
+function delComment(i){
+  var c=getComments(); c.splice(i,1); saveComments(c);
+  showToast(t('deleted'));
+  renderAdminComments(document.getElementById('admin-content'));
+}
+
+// ── ALL PLACES ──
+function renderAdminPlaces(c){
+  var places=getPlaces();
+  if(!places.length){c.innerHTML='<div class="empty-vis"><span>📍</span><div>لا توجد أماكن</div></div>';return;}
+  c.innerHTML='<div style="padding:4px">'+places.map(function(p){
+    return '<div class="place-card" onclick="openDetail(\''+p.id+'\')">'
+      +'<div class="place-card-top">'
+        +'<div class="place-av">'+catIco(p.cat)+'</div>'
+        +'<div style="flex:1"><div class="place-name">'+p.name+'</div>'
+        +'<div class="place-meta">📍 '+p.gov+(p.region?' — '+p.region:'')+'</div>'
+        +'<div style="font-size:11px;color:var(--muted)">بواسطة: '+(p.orgName||'؟')+'</div></div>'
+      +'</div>'
+    +'</div>';
+  }).join('')+'</div>';
+}
+
+// ══════════════════════════════════════════════
+//  LOGOUT
+// ══════════════════════════════════════════════
+function doLogout(){
+  currentUser=null;
+  goScreen('s-who');
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+// seed بيانات تجريبية إذا كانت القاعدة فارغة
+(function seedDemo(){
+  // جمعية تجريبية
+  if(!getUsers().length){
+    saveUsers([{name:'جمعية رعاية لبنان',code:'ORG-TEST-2025',role:'org',active:true}]);
+  }
+  // أماكن تجريبية
+  if(getPlaces().length) return;
+  savePlaces([
+    {id:'demo1',name:'مستشفى سيدة لبنان',gov:'بيروت',region:'الجميزة',cat:'مستشفى',address:'شارع البرلمان',feats:{ramp:'ok',park:'ok',toilet:'ok',elev:'ok',staff:'ok'},photos:[],lat:33.8938,lng:35.5127,orgName:'جمعية رعاية',addedBy:'demo',time:'2025/01/01',status:'approved'},
+    {id:'demo2',name:'صيدلية اليقين',gov:'جبل لبنان',region:'بيت مري',cat:'صيدلية',address:'الطريق الرئيسية',feats:{ramp:'nok',park:'avg',toilet:'nok',sign:'ok'},photos:[],lat:33.8750,lng:35.6200,orgName:'جمعية الصحة',addedBy:'demo',time:'2025/01/02',status:'approved'},
+    {id:'demo3',name:'مخفر طرابلس المركزي',gov:'الشمال',region:'طرابلس',cat:'مخفر',address:'ساحة النجمة',feats:{ramp:'avg',park:'ok',staff:'ok'},photos:[],lat:34.4367,lng:35.8497,orgName:'جمعية الأمان',addedBy:'demo',time:'2025/01/03',status:'approved'},
+  ]);
+})();
+</script>
+</body>
+</html>

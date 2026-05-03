@@ -1,25 +1,48 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import { Alert, Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import {
+  Alert,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AdminLoginScreen } from "@/components/AdminLoginScreen";
 import { useApp } from "@/contexts/AppContext";
 import type { Profile } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
-import { useState } from "react";
 
 const CATEGORIES = ["تقرير", "خبر عاجل", "تحقيق", "مقال رأي", "حوار"];
 
 export default function AdminScreen() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <AdminLoginScreen />;
+  }
+
+  return <AdminPanel />;
+}
+
+function AdminPanel() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { posts, profile, addPost, deletePost, updateProfile, isLoading } = useApp();
+  const { posts, profile, addPost, deletePost, updateProfile } = useApp();
+  const { logout, changePassword } = useAuth();
 
   const topInset = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 34 : 0;
 
-  const [section, setSection] = useState<"profile" | "newpost" | "manage">("newpost");
+  const [section, setSection] = useState<"newpost" | "profile" | "manage" | "security">("newpost");
 
   const [postTitle, setPostTitle] = useState("");
   const [postContent, setPostContent] = useState("");
@@ -30,17 +53,30 @@ export default function AdminScreen() {
   const [profileData, setProfileData] = useState<Profile>(profile);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
+  const [oldPass, setOldPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [passError, setPassError] = useState("");
+  const [isSavingPass, setIsSavingPass] = useState(false);
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+
   async function handlePickImage(forPost: boolean) {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("صلاحية مطلوبة", "يرجى السماح بالوصول إلى مكتبة الصور");
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       base64: true,
-      quality: 0.7,
+      quality: 0.65,
       allowsEditing: true,
     });
     if (!result.canceled && result.assets[0].base64) {
       const base64 = `data:image/jpeg;base64,${result.assets[0].base64}`;
       if (forPost) setPostImage(base64);
-      else setProfileData({ ...profileData, logoBase64: base64 });
+      else setProfileData((p) => ({ ...p, logoBase64: base64 }));
     }
   }
 
@@ -76,28 +112,56 @@ export default function AdminScreen() {
     }
   }
 
+  async function handleChangePassword() {
+    setPassError("");
+    if (!oldPass || !newPass || !confirmPass) {
+      setPassError("يرجى ملء جميع الحقول");
+      return;
+    }
+    if (newPass !== confirmPass) {
+      setPassError("كلمة المرور الجديدة غير متطابقة");
+      return;
+    }
+    setIsSavingPass(true);
+    const result = await changePassword(oldPass, newPass);
+    setIsSavingPass(false);
+    if (result.success) {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setOldPass("");
+      setNewPass("");
+      setConfirmPass("");
+      Alert.alert("تم التغيير", "تم تغيير كلمة المرور بنجاح");
+    } else {
+      setPassError(result.error ?? "حدث خطأ");
+    }
+  }
+
   async function handleDeletePost(id: string, title: string) {
-    Alert.alert(
-      "حذف التقرير",
-      `هل تريد حذف "${title}"؟`,
-      [
-        { text: "إلغاء", style: "cancel" },
-        {
-          text: "حذف",
-          style: "destructive",
-          onPress: async () => {
-            await deletePost(id);
-            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          },
+    Alert.alert("حذف التقرير", `هل تريد حذف "${title}"؟`, [
+      { text: "إلغاء", style: "cancel" },
+      {
+        text: "حذف",
+        style: "destructive",
+        onPress: async () => {
+          await deletePost(id);
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         },
-      ]
-    );
+      },
+    ]);
+  }
+
+  function handleLogout() {
+    Alert.alert("تسجيل الخروج", "هل تريد الخروج من لوحة الإدارة؟", [
+      { text: "إلغاء", style: "cancel" },
+      { text: "خروج", style: "destructive", onPress: () => logout() },
+    ]);
   }
 
   const tabItems = [
-    { key: "newpost" as const, label: "نشر تقرير", icon: "plus-circle" as const },
+    { key: "newpost" as const, label: "نشر", icon: "plus-circle" as const },
     { key: "profile" as const, label: "المنصة", icon: "settings" as const },
     { key: "manage" as const, label: "إدارة", icon: "list" as const },
+    { key: "security" as const, label: "الأمان", icon: "lock" as const },
   ];
 
   return (
@@ -112,20 +176,19 @@ export default function AdminScreen() {
           },
         ]}
       >
-        <Text style={[styles.headerTitle, { color: colors.gold }]}>
-          لوحة الإدارة
-        </Text>
-        <View
+        <TouchableOpacity
           style={[
-            styles.adminBadge,
-            { backgroundColor: colors.primary + "22", borderColor: colors.primary },
+            styles.logoutBtn,
+            { backgroundColor: colors.destructive + "22", borderColor: colors.destructive + "55" },
           ]}
+          onPress={handleLogout}
+          activeOpacity={0.7}
         >
-          <Feather name="lock" size={12} color={colors.primary} />
-          <Text style={[styles.adminBadgeText, { color: colors.primary }]}>
-            المحرر
-          </Text>
-        </View>
+          <Feather name="log-out" size={14} color={colors.destructive} />
+          <Text style={[styles.logoutText, { color: colors.destructive }]}>خروج</Text>
+        </TouchableOpacity>
+
+        <Text style={[styles.headerTitle, { color: colors.gold }]}>لوحة الإدارة</Text>
       </View>
 
       <View style={[styles.tabs, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
@@ -134,7 +197,10 @@ export default function AdminScreen() {
             key={tab.key}
             style={[
               styles.tab,
-              section === tab.key && { borderBottomColor: colors.primary, borderBottomWidth: 2 },
+              section === tab.key && {
+                borderBottomColor: section === tab.key && tab.key === "security" ? colors.gold : colors.primary,
+                borderBottomWidth: 2,
+              },
             ]}
             onPress={() => setSection(tab.key)}
             activeOpacity={0.7}
@@ -142,12 +208,16 @@ export default function AdminScreen() {
             <Feather
               name={tab.icon}
               size={16}
-              color={section === tab.key ? colors.primary : colors.mutedForeground}
+              color={section === tab.key ? (tab.key === "security" ? colors.gold : colors.primary) : colors.mutedForeground}
             />
             <Text
               style={[
                 styles.tabLabel,
-                { color: section === tab.key ? colors.primary : colors.mutedForeground },
+                {
+                  color: section === tab.key
+                    ? tab.key === "security" ? colors.gold : colors.primary
+                    : colors.mutedForeground,
+                },
               ]}
             >
               {tab.label}
@@ -164,7 +234,11 @@ export default function AdminScreen() {
         {section === "newpost" && (
           <View style={styles.section}>
             <SectionBox colors={colors} title="نوع المحتوى">
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categories}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categories}
+              >
                 {CATEGORIES.map((cat) => (
                   <TouchableOpacity
                     key={cat}
@@ -193,7 +267,15 @@ export default function AdminScreen() {
 
             <SectionBox colors={colors} title="العنوان">
               <TextInput
-                style={[styles.input, { backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius }]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.input,
+                    color: colors.foreground,
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                  },
+                ]}
                 placeholder="عنوان التقرير..."
                 placeholderTextColor={colors.mutedForeground}
                 value={postTitle}
@@ -204,7 +286,15 @@ export default function AdminScreen() {
 
             <SectionBox colors={colors} title="المحتوى">
               <TextInput
-                style={[styles.textArea, { backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius }]}
+                style={[
+                  styles.textArea,
+                  {
+                    backgroundColor: colors.input,
+                    color: colors.foreground,
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                  },
+                ]}
                 placeholder="اكتب التفاصيل الكاملة هنا..."
                 placeholderTextColor={colors.mutedForeground}
                 value={postContent}
@@ -218,13 +308,24 @@ export default function AdminScreen() {
 
             <SectionBox colors={colors} title="صورة مرفقة (اختياري)">
               <TouchableOpacity
-                style={[styles.imagePicker, { borderColor: colors.border, borderRadius: colors.radius, backgroundColor: colors.card }]}
+                style={[
+                  styles.imagePicker,
+                  {
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                    backgroundColor: colors.card,
+                  },
+                ]}
                 onPress={() => handlePickImage(true)}
                 activeOpacity={0.7}
               >
                 {postImage ? (
                   <View style={styles.imagePreviewWrapper}>
-                    <Image source={{ uri: postImage }} style={[styles.imagePreview, { borderRadius: colors.radius - 2 }]} resizeMode="cover" />
+                    <Image
+                      source={{ uri: postImage }}
+                      style={[styles.imagePreview, { borderRadius: colors.radius - 4 }]}
+                      resizeMode="cover"
+                    />
                     <TouchableOpacity
                       style={[styles.removeImage, { backgroundColor: colors.destructive }]}
                       onPress={() => setPostImage(null)}
@@ -247,7 +348,8 @@ export default function AdminScreen() {
               style={[
                 styles.publishBtn,
                 {
-                  backgroundColor: !postTitle.trim() && !postContent.trim() ? colors.muted : colors.primary,
+                  backgroundColor:
+                    !postTitle.trim() && !postContent.trim() ? colors.muted : colors.primary,
                   borderRadius: colors.radius,
                   opacity: isPublishing ? 0.7 : 1,
                 },
@@ -256,11 +358,18 @@ export default function AdminScreen() {
               disabled={isPublishing || (!postTitle.trim() && !postContent.trim())}
               activeOpacity={0.8}
             >
-              <Feather name="send" size={18} color={!postTitle.trim() && !postContent.trim() ? colors.mutedForeground : "#000"} />
+              <Feather
+                name="send"
+                size={18}
+                color={!postTitle.trim() && !postContent.trim() ? colors.mutedForeground : "#000"}
+              />
               <Text
                 style={[
                   styles.publishBtnText,
-                  { color: !postTitle.trim() && !postContent.trim() ? colors.mutedForeground : "#000" },
+                  {
+                    color:
+                      !postTitle.trim() && !postContent.trim() ? colors.mutedForeground : "#000",
+                  },
                 ]}
               >
                 {isPublishing ? "جاري النشر..." : "نشر الآن"}
@@ -273,16 +382,25 @@ export default function AdminScreen() {
           <View style={styles.section}>
             <SectionBox colors={colors} title="شعار المنصة">
               <TouchableOpacity
-                style={[styles.logoPickerArea, { borderColor: colors.border, borderRadius: colors.radius, backgroundColor: colors.card }]}
+                style={[
+                  styles.logoPickerArea,
+                  { borderColor: colors.border, borderRadius: colors.radius - 4, backgroundColor: colors.card },
+                ]}
                 onPress={() => handlePickImage(false)}
                 activeOpacity={0.7}
               >
                 {profileData.logoBase64 ? (
-                  <Image source={{ uri: profileData.logoBase64 }} style={[styles.logoPreview, { borderRadius: colors.radius }]} />
+                  <Image
+                    source={{ uri: profileData.logoBase64 }}
+                    style={[styles.logoPreview, { borderRadius: colors.radius - 4 }]}
+                    resizeMode="cover"
+                  />
                 ) : (
                   <View style={styles.logoPickerInner}>
                     <Feather name="camera" size={28} color={colors.mutedForeground} />
-                    <Text style={[{ color: colors.mutedForeground, marginTop: 8, fontSize: 13 }]}>رفع الشعار</Text>
+                    <Text style={[{ color: colors.mutedForeground, marginTop: 8, fontSize: 13 }]}>
+                      رفع الشعار
+                    </Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -290,11 +408,19 @@ export default function AdminScreen() {
 
             <SectionBox colors={colors} title="رسالة المنصة">
               <TextInput
-                style={[styles.textArea, { backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius }]}
+                style={[
+                  styles.textArea,
+                  {
+                    backgroundColor: colors.input,
+                    color: colors.foreground,
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                  },
+                ]}
                 placeholder="نبذة عن المنصة وأهدافها..."
                 placeholderTextColor={colors.mutedForeground}
                 value={profileData.about}
-                onChangeText={(t) => setProfileData({ ...profileData, about: t })}
+                onChangeText={(t) => setProfileData((p) => ({ ...p, about: t }))}
                 multiline
                 numberOfLines={5}
                 textAlignVertical="top"
@@ -304,20 +430,37 @@ export default function AdminScreen() {
 
             <SectionBox colors={colors} title="معلومات التواصل">
               <TextInput
-                style={[styles.input, { backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius, marginBottom: 10 }]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.input,
+                    color: colors.foreground,
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                    marginBottom: 10,
+                  },
+                ]}
                 placeholder="رقم الهاتف"
                 placeholderTextColor={colors.mutedForeground}
                 value={profileData.phone}
-                onChangeText={(t) => setProfileData({ ...profileData, phone: t })}
+                onChangeText={(t) => setProfileData((p) => ({ ...p, phone: t }))}
                 keyboardType="phone-pad"
                 textAlign="right"
               />
               <TextInput
-                style={[styles.input, { backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius }]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.input,
+                    color: colors.foreground,
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                  },
+                ]}
                 placeholder="البريد الإلكتروني"
                 placeholderTextColor={colors.mutedForeground}
                 value={profileData.email}
-                onChangeText={(t) => setProfileData({ ...profileData, email: t })}
+                onChangeText={(t) => setProfileData((p) => ({ ...p, email: t }))}
                 keyboardType="email-address"
                 textAlign="right"
               />
@@ -326,7 +469,11 @@ export default function AdminScreen() {
             <TouchableOpacity
               style={[
                 styles.publishBtn,
-                { backgroundColor: colors.gold, borderRadius: colors.radius, opacity: isSavingProfile ? 0.7 : 1 },
+                {
+                  backgroundColor: colors.gold,
+                  borderRadius: colors.radius,
+                  opacity: isSavingProfile ? 0.7 : 1,
+                },
               ]}
               onPress={handleSaveProfile}
               disabled={isSavingProfile}
@@ -362,7 +509,11 @@ export default function AdminScreen() {
                 key={post.id}
                 style={[
                   styles.manageItem,
-                  { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border },
+                  {
+                    backgroundColor: colors.card,
+                    borderRadius: colors.radius,
+                    borderColor: colors.border,
+                  },
                 ]}
               >
                 {post.imageBase64 && (
@@ -372,7 +523,10 @@ export default function AdminScreen() {
                   />
                 )}
                 <View style={styles.manageItemInfo}>
-                  <Text style={[styles.manageItemTitle, { color: colors.foreground }]} numberOfLines={2}>
+                  <Text
+                    style={[styles.manageItemTitle, { color: colors.foreground }]}
+                    numberOfLines={2}
+                  >
                     {post.title || "بدون عنوان"}
                   </Text>
                   <View style={styles.manageItemMeta}>
@@ -397,14 +551,171 @@ export default function AdminScreen() {
             ))}
           </View>
         )}
+
+        {section === "security" && (
+          <View style={styles.section}>
+            <View
+              style={[
+                styles.securityInfo,
+                {
+                  backgroundColor: colors.gold + "11",
+                  borderColor: colors.gold + "33",
+                  borderRadius: colors.radius,
+                },
+              ]}
+            >
+              <Feather name="shield" size={18} color={colors.gold} />
+              <Text style={[styles.securityInfoText, { color: colors.gold }]}>
+                تغيير كلمة مرور لوحة الإدارة
+              </Text>
+            </View>
+
+            <SectionBox colors={colors} title="كلمة المرور الحالية">
+              <View
+                style={[
+                  styles.passInputRow,
+                  {
+                    backgroundColor: colors.input,
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                  },
+                ]}
+              >
+                <TouchableOpacity onPress={() => setShowOld(!showOld)} style={styles.eyeBtn}>
+                  <Feather
+                    name={showOld ? "eye-off" : "eye"}
+                    size={16}
+                    color={colors.mutedForeground}
+                  />
+                </TouchableOpacity>
+                <TextInput
+                  style={[styles.passInput, { color: colors.foreground }]}
+                  placeholder="كلمة المرور الحالية"
+                  placeholderTextColor={colors.mutedForeground}
+                  value={oldPass}
+                  onChangeText={(t) => { setOldPass(t); setPassError(""); }}
+                  secureTextEntry={!showOld}
+                  textAlign="right"
+                  autoCapitalize="none"
+                />
+              </View>
+            </SectionBox>
+
+            <SectionBox colors={colors} title="كلمة المرور الجديدة">
+              <View
+                style={[
+                  styles.passInputRow,
+                  {
+                    backgroundColor: colors.input,
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                    marginBottom: 10,
+                  },
+                ]}
+              >
+                <TouchableOpacity onPress={() => setShowNew(!showNew)} style={styles.eyeBtn}>
+                  <Feather
+                    name={showNew ? "eye-off" : "eye"}
+                    size={16}
+                    color={colors.mutedForeground}
+                  />
+                </TouchableOpacity>
+                <TextInput
+                  style={[styles.passInput, { color: colors.foreground }]}
+                  placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)"
+                  placeholderTextColor={colors.mutedForeground}
+                  value={newPass}
+                  onChangeText={(t) => { setNewPass(t); setPassError(""); }}
+                  secureTextEntry={!showNew}
+                  textAlign="right"
+                  autoCapitalize="none"
+                />
+              </View>
+              <View
+                style={[
+                  styles.passInputRow,
+                  {
+                    backgroundColor: colors.input,
+                    borderColor: colors.border,
+                    borderRadius: colors.radius - 4,
+                  },
+                ]}
+              >
+                <Feather name="check-circle" size={16} color={colors.mutedForeground} style={{ margin: 10 }} />
+                <TextInput
+                  style={[styles.passInput, { color: colors.foreground }]}
+                  placeholder="تأكيد كلمة المرور الجديدة"
+                  placeholderTextColor={colors.mutedForeground}
+                  value={confirmPass}
+                  onChangeText={(t) => { setConfirmPass(t); setPassError(""); }}
+                  secureTextEntry={!showNew}
+                  textAlign="right"
+                  autoCapitalize="none"
+                />
+              </View>
+            </SectionBox>
+
+            {passError ? (
+              <View
+                style={[
+                  styles.errorBox,
+                  {
+                    backgroundColor: colors.destructive + "18",
+                    borderColor: colors.destructive + "44",
+                    borderRadius: colors.radius,
+                  },
+                ]}
+              >
+                <Feather name="alert-circle" size={14} color={colors.destructive} />
+                <Text style={[styles.errorText, { color: colors.destructive }]}>{passError}</Text>
+              </View>
+            ) : null}
+
+            <TouchableOpacity
+              style={[
+                styles.publishBtn,
+                {
+                  backgroundColor: colors.gold,
+                  borderRadius: colors.radius,
+                  opacity: isSavingPass ? 0.7 : 1,
+                },
+              ]}
+              onPress={handleChangePassword}
+              disabled={isSavingPass}
+              activeOpacity={0.8}
+            >
+              <Feather name="key" size={18} color="#000" />
+              <Text style={[styles.publishBtnText, { color: "#000" }]}>
+                {isSavingPass ? "جاري الحفظ..." : "تغيير كلمة المرور"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
 }
 
-function SectionBox({ colors, title, children }: { colors: ReturnType<typeof useColors>; title: string; children: React.ReactNode }) {
+function SectionBox({
+  colors,
+  title,
+  children,
+}: {
+  colors: ReturnType<typeof useColors>;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <View style={[styles.sectionBox, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}>
+    <View
+      style={[
+        styles.sectionBox,
+        {
+          backgroundColor: colors.card,
+          borderRadius: colors.radius,
+          borderColor: colors.border,
+        },
+      ]}
+    >
       <Text style={[styles.sectionBoxTitle, { color: colors.gold }]}>{title}</Text>
       {children}
     </View>
@@ -419,26 +730,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 10,
+    justifyContent: "space-between",
   },
-  headerTitle: {
-    fontSize: 22,
-    fontFamily: "Inter_700Bold",
-  },
-  adminBadge: {
+  headerTitle: { fontSize: 22, fontFamily: "Inter_700Bold" },
+  logoutBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
   },
-  adminBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
+  logoutText: { fontSize: 12, fontWeight: "600" },
   tabs: {
     flexDirection: "row",
     borderBottomWidth: 1,
@@ -449,33 +753,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
   },
-  tabLabel: {
-    fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
-  },
-  section: {
-    padding: 16,
-    gap: 12,
-  },
-  sectionBox: {
-    padding: 16,
-    borderWidth: 1,
-    gap: 10,
-  },
-  sectionBoxTitle: {
-    fontSize: 13,
-    fontFamily: "Inter_700Bold",
-    textAlign: "right",
-  },
-  categories: {
-    flexDirection: "row",
-    gap: 8,
-    paddingVertical: 4,
-  },
-  categoryChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-  },
+  tabLabel: { fontSize: 10, fontFamily: "Inter_600SemiBold" },
+  section: { padding: 16, gap: 12 },
+  sectionBox: { padding: 16, borderWidth: 1, gap: 10 },
+  sectionBoxTitle: { fontSize: 13, fontFamily: "Inter_700Bold", textAlign: "right" },
+  categories: { flexDirection: "row", gap: 8, paddingVertical: 4 },
+  categoryChip: { paddingHorizontal: 14, paddingVertical: 7 },
   input: {
     padding: 12,
     borderWidth: 1,
@@ -497,23 +780,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden",
   },
-  imagePickerInner: {
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 20,
-  },
-  imagePickerText: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-  },
-  imagePreviewWrapper: {
-    width: "100%",
-    position: "relative",
-  },
-  imagePreview: {
-    width: "100%",
-    height: 180,
-  },
+  imagePickerInner: { alignItems: "center", gap: 8, paddingVertical: 20 },
+  imagePickerText: { fontSize: 14, fontFamily: "Inter_400Regular" },
+  imagePreviewWrapper: { width: "100%", position: "relative" },
+  imagePreview: { width: "100%", height: 180 },
   removeImage: {
     position: "absolute",
     top: 8,
@@ -532,10 +802,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 4,
   },
-  publishBtnText: {
-    fontSize: 16,
-    fontFamily: "Inter_700Bold",
-  },
+  publishBtnText: { fontSize: 16, fontFamily: "Inter_700Bold" },
   logoPickerArea: {
     height: 120,
     borderWidth: 1,
@@ -544,21 +811,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden",
   },
-  logoPickerInner: {
-    alignItems: "center",
-  },
-  logoPreview: {
-    width: "100%",
-    height: 120,
-  },
-  manageHeader: {
-    paddingBottom: 8,
-    alignItems: "flex-end",
-  },
-  manageCount: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-  },
+  logoPickerInner: { alignItems: "center" },
+  logoPreview: { width: "100%", height: 120 },
+  manageHeader: { paddingBottom: 8, alignItems: "flex-end" },
+  manageCount: { fontSize: 13, fontFamily: "Inter_400Regular" },
   manageItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -567,14 +823,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 8,
   },
-  manageThumb: {
-    width: 60,
-    height: 50,
-  },
-  manageItemInfo: {
-    flex: 1,
-    gap: 6,
-  },
+  manageThumb: { width: 60, height: 50 },
+  manageItemInfo: { flex: 1, gap: 6 },
   manageItemTitle: {
     fontSize: 13,
     fontFamily: "Inter_600SemiBold",
@@ -586,15 +836,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     gap: 8,
   },
-  smallBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  manageItemDate: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-  },
+  smallBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
+  manageItemDate: { fontSize: 11, fontFamily: "Inter_400Regular" },
   deleteBtn: {
     width: 36,
     height: 36,
@@ -602,13 +845,41 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  empty: {
+  empty: { alignItems: "center", paddingVertical: 40, gap: 10 },
+  emptyText: { fontSize: 14, fontFamily: "Inter_400Regular" },
+  securityInfo: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 40,
     gap: 10,
+    padding: 14,
+    borderWidth: 1,
   },
-  emptyText: {
+  securityInfoText: {
+    flex: 1,
     fontSize: 14,
+    fontFamily: "Inter_700Bold",
+    textAlign: "right",
+  },
+  passInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    paddingHorizontal: 4,
+  },
+  eyeBtn: { padding: 10 },
+  passInput: {
+    flex: 1,
+    paddingVertical: 13,
+    paddingHorizontal: 8,
+    fontSize: 15,
     fontFamily: "Inter_400Regular",
   },
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    borderWidth: 1,
+  },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", textAlign: "right" },
 });
