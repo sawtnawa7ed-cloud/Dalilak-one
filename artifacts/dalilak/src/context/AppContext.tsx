@@ -1,90 +1,93 @@
-import React, { createContext, useContext, useState } from "react";
-import { PLACES } from "@/data/places";
-import type { Place } from "@/data/places";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 type Lang = "ar" | "en" | "fr";
-type UserType = "visitor" | "resident" | null;
+type Screen = "splash" | "lang" | "who" | "disability" | "main";
+
+interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  role: "visitor" | "expert" | "admin";
+  status: string;
+}
 
 interface AppContextType {
   lang: Lang;
   setLang: (l: Lang) => void;
-  userType: UserType;
-  setUserType: (t: UserType) => void;
+  userType: string | null;
+  setUserType: (t: string | null) => void;
   disabilities: string[];
   toggleDisability: (d: string) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   activeCategory: string;
   setActiveCategory: (c: string) => void;
-  places: Place[];
-  filteredPlaces: Place[];
-  favorites: string[];
-  toggleFavorite: (id: string) => void;
-  screen: "splash" | "lang" | "who" | "disability" | "main";
-  setScreen: (s: "splash" | "lang" | "who" | "disability" | "main") => void;
+  favorites: number[];
+  toggleFavorite: (id: number) => void;
+  screen: Screen;
+  setScreen: (s: Screen) => void;
+  authUser: AuthUser | null;
+  authToken: string | null;
+  login: (token: string, user: AuthUser) => void;
+  logout: () => void;
+  filters: {
+    governorateId?: number;
+    cityId?: number;
+    areaId?: number;
+  };
+  setFilters: (f: { governorateId?: number; cityId?: number; areaId?: number }) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
 
-const T: Record<Lang, Record<string, string>> = {
-  ar: {},
-  en: {},
-  fr: {},
-};
-
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = useState<Lang>("ar");
-  const [userType, setUserType] = useState<UserType>(null);
+  const [userType, setUserType] = useState<string | null>(null);
   const [disabilities, setDisabilities] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("الكل");
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [screen, setScreen] = useState<"splash" | "lang" | "who" | "disability" | "main">("splash");
-
-  const toggleDisability = (d: string) => {
-    setDisabilities((prev) =>
-      prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
-    );
-  };
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
-  const filteredPlaces = PLACES.filter((p) => {
-    const matchesSearch =
-      !searchQuery ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.nameEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.area?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      activeCategory === "الكل" || p.category === activeCategory;
-    return matchesSearch && matchesCategory;
+  const [favorites, setFavorites] = useState<number[]>(() => {
+    try { return JSON.parse(localStorage.getItem("dalilak_favs") || "[]"); } catch { return []; }
   });
+  const [screen, setScreen] = useState<Screen>("splash");
+  const [authUser, setAuthUser] = useState<AuthUser | null>(() => {
+    try { return JSON.parse(localStorage.getItem("dalilak_user") || "null"); } catch { return null; }
+  });
+  const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem("dalilak_token"));
+  const [filters, setFilters] = useState<{ governorateId?: number; cityId?: number; areaId?: number }>({});
+
+  const toggleDisability = (d: string) =>
+    setDisabilities((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
+
+  const toggleFavorite = (id: number) => {
+    setFavorites((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      localStorage.setItem("dalilak_favs", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const login = (token: string, user: AuthUser) => {
+    setAuthToken(token);
+    setAuthUser(user);
+    localStorage.setItem("dalilak_token", token);
+    localStorage.setItem("dalilak_user", JSON.stringify(user));
+  };
+
+  const logout = () => {
+    setAuthToken(null);
+    setAuthUser(null);
+    localStorage.removeItem("dalilak_token");
+    localStorage.removeItem("dalilak_user");
+  };
 
   return (
-    <AppContext.Provider
-      value={{
-        lang,
-        setLang,
-        userType,
-        setUserType,
-        disabilities,
-        toggleDisability,
-        searchQuery,
-        setSearchQuery,
-        activeCategory,
-        setActiveCategory,
-        places: PLACES,
-        filteredPlaces,
-        favorites,
-        toggleFavorite,
-        screen,
-        setScreen,
-      }}
-    >
+    <AppContext.Provider value={{
+      lang, setLang, userType, setUserType, disabilities, toggleDisability,
+      searchQuery, setSearchQuery, activeCategory, setActiveCategory,
+      favorites, toggleFavorite, screen, setScreen,
+      authUser, authToken, login, logout, filters, setFilters,
+    }}>
       {children}
     </AppContext.Provider>
   );

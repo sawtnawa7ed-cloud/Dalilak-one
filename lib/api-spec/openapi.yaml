@@ -1,22 +1,27 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Dalilak API - Lebanon Accessibility Guide
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: places
+  - name: evaluations
+  - name: photos
+  - name: experts
+  - name: complaints
+  - name: geo
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +29,391 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [auth]
+      summary: Register new user or expert request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /geo/governorates:
+    get:
+      operationId: listGovernorates
+      tags: [geo]
+      summary: List all Lebanese governorates
+      responses:
+        "200":
+          description: List of governorates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Governorate"
+
+  /geo/cities:
+    get:
+      operationId: listCities
+      tags: [geo]
+      summary: List cities, optionally filtered by governorate
+      parameters:
+        - name: governorateId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/City"
+
+  /geo/areas:
+    get:
+      operationId: listAreas
+      tags: [geo]
+      summary: List areas, optionally filtered by city
+      parameters:
+        - name: cityId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of areas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Area"
+
+  /places:
+    get:
+      operationId: listPlaces
+      tags: [places]
+      summary: List places with filters
+      parameters:
+        - name: governorateId
+          in: query
+          schema:
+            type: integer
+        - name: cityId
+          in: query
+          schema:
+            type: integer
+        - name: areaId
+          in: query
+          schema:
+            type: integer
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: lat
+          in: query
+          schema:
+            type: number
+        - name: lng
+          in: query
+          schema:
+            type: number
+        - name: radius
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of places
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Place"
+
+    post:
+      operationId: createPlace
+      tags: [places]
+      summary: Add a new place (expert only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlaceBody"
+      responses:
+        "201":
+          description: Place created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+
+  /places/{id}:
+    get:
+      operationId: getPlace
+      tags: [places]
+      summary: Get place details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Place details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceDetail"
+
+    put:
+      operationId: updatePlace
+      tags: [places]
+      summary: Update place (expert/admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlaceBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+
+    delete:
+      operationId: deletePlace
+      tags: [places]
+      summary: Delete place (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /places/{id}/photos:
+    post:
+      operationId: uploadPlacePhoto
+      tags: [photos]
+      summary: Upload photo for a place (expert only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadPhotoBody"
+      responses:
+        "201":
+          description: Photo added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+
+  /places/{id}/evaluation:
+    post:
+      operationId: submitEvaluation
+      tags: [evaluations]
+      summary: Submit field evaluation for a place (expert only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluationBody"
+      responses:
+        "201":
+          description: Evaluation submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Evaluation"
+
+  /experts:
+    get:
+      operationId: listExperts
+      tags: [experts]
+      summary: List expert requests (admin only)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+      responses:
+        "200":
+          description: List of experts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /experts/{id}/approve:
+    post:
+      operationId: approveExpert
+      tags: [experts]
+      summary: Approve expert (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Expert approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /experts/{id}/reject:
+    post:
+      operationId: rejectExpert
+      tags: [experts]
+      summary: Reject/revoke expert access (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Expert rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /complaints:
+    get:
+      operationId: listComplaints
+      tags: [complaints]
+      summary: List complaints (admin only)
+      responses:
+        "200":
+          description: List of complaints
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Complaint"
+
+    post:
+      operationId: submitComplaint
+      tags: [complaints]
+      summary: Submit a complaint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintBody"
+      responses:
+        "201":
+          description: Complaint submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [health]
+      summary: Platform statistics
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +421,321 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    RegisterBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [visitor, expert]
+        phone:
+          type: string
+      required: [name, email, password, role]
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required: [token, user]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [visitor, expert, admin]
+        status:
+          type: string
+          enum: [pending, approved, rejected, active]
+        phone:
+          type: string
+        createdAt:
+          type: string
+      required: [id, name, email, role, status, createdAt]
+
+    Governorate:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameEn:
+          type: string
+      required: [id, name, nameEn]
+
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameEn:
+          type: string
+        governorateId:
+          type: integer
+      required: [id, name, nameEn, governorateId]
+
+    Area:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cityId:
+          type: integer
+      required: [id, name, cityId]
+
+    Place:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        address:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        phone:
+          type: string
+        governorateId:
+          type: integer
+        cityId:
+          type: integer
+        areaId:
+          type: integer
+        governorateName:
+          type: string
+        cityName:
+          type: string
+        areaName:
+          type: string
+        avgRating:
+          type: number
+        reviewCount:
+          type: integer
+        isVerified:
+          type: boolean
+        coverPhoto:
+          type: string
+        hasRamp:
+          type: boolean
+        hasElevator:
+          type: boolean
+        hasAccessibleBathroom:
+          type: boolean
+        hasAccessibleParking:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, category, address, lat, lng, governorateId, cityId, isVerified, createdAt]
+
+    PlaceDetail:
+      allOf:
+        - $ref: "#/components/schemas/Place"
+        - type: object
+          properties:
+            photos:
+              type: array
+              items:
+                $ref: "#/components/schemas/Photo"
+            evaluations:
+              type: array
+              items:
+                $ref: "#/components/schemas/Evaluation"
+            description:
+              type: string
+
+    Photo:
+      type: object
+      properties:
+        id:
+          type: integer
+        placeId:
+          type: integer
+        url:
+          type: string
+        caption:
+          type: string
+        uploadedByName:
+          type: string
+        createdAt:
+          type: string
+      required: [id, placeId, url, createdAt]
+
+    EvaluationBody:
+      type: object
+      properties:
+        hasRamp:
+          type: boolean
+        hasElevator:
+          type: boolean
+        hasAccessibleBathroom:
+          type: boolean
+        hasAccessibleParking:
+          type: boolean
+        hasSignLanguage:
+          type: boolean
+        hasBraille:
+          type: boolean
+        rampCondition:
+          type: string
+          enum: [good, fair, poor]
+        notes:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+      required: [hasRamp, hasElevator, hasAccessibleBathroom, hasAccessibleParking, rating]
+
+    Evaluation:
+      type: object
+      properties:
+        id:
+          type: integer
+        placeId:
+          type: integer
+        expertId:
+          type: integer
+        expertName:
+          type: string
+        hasRamp:
+          type: boolean
+        hasElevator:
+          type: boolean
+        hasAccessibleBathroom:
+          type: boolean
+        hasAccessibleParking:
+          type: boolean
+        hasSignLanguage:
+          type: boolean
+        hasBraille:
+          type: boolean
+        rampCondition:
+          type: string
+        notes:
+          type: string
+        rating:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, placeId, expertId, hasRamp, hasElevator, hasAccessibleBathroom, hasAccessibleParking, rating, createdAt]
+
+    CreatePlaceBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        address:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        phone:
+          type: string
+        description:
+          type: string
+        governorateId:
+          type: integer
+        cityId:
+          type: integer
+        areaId:
+          type: integer
+      required: [name, category, address, lat, lng, governorateId, cityId]
+
+    UploadPhotoBody:
+      type: object
+      properties:
+        url:
+          type: string
+        caption:
+          type: string
+      required: [url]
+
+    ComplaintBody:
+      type: object
+      properties:
+        placeId:
+          type: integer
+        message:
+          type: string
+        senderName:
+          type: string
+        senderEmail:
+          type: string
+      required: [message, senderName, senderEmail]
+
+    Complaint:
+      type: object
+      properties:
+        id:
+          type: integer
+        placeId:
+          type: integer
+        placeName:
+          type: string
+        message:
+          type: string
+        senderName:
+          type: string
+        senderEmail:
+          type: string
+        status:
+          type: string
+          enum: [open, resolved]
+        createdAt:
+          type: string
+      required: [id, message, senderName, senderEmail, status, createdAt]
+
+    Stats:
+      type: object
+      properties:
+        totalPlaces:
+          type: integer
+        totalExperts:
+          type: integer
+        totalEvaluations:
+          type: integer
+        totalGovernorates:
+          type: integer
+        recentPlaces:
+          type: array
+          items:
+            $ref: "#/components/schemas/Place"
+      required: [totalPlaces, totalExperts, totalEvaluations, totalGovernorates, recentPlaces]

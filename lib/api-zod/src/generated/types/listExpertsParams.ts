@@ -5,7 +5,8 @@
  * Dalilak API - Lebanon Accessibility Guide
  * OpenAPI spec version: 0.1.0
  */
+import type { ListExpertsStatus } from "./listExpertsStatus";
 
-export interface HealthStatus {
-  status: string;
-}
+export type ListExpertsParams = {
+  status?: ListExpertsStatus;
+};

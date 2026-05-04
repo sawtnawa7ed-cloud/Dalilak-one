@@ -5,15 +5,23 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import PlaceDetail from "@/pages/PlaceDetail";
+import AdminPanel from "@/pages/AdminPanel";
+import ExpertPanel from "@/pages/ExpertPanel";
 import { AppProvider } from "@/context/AppContext";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 30_000 },
+  },
+});
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/place/:id" component={PlaceDetail} />
+      <Route path="/admin" component={AdminPanel} />
+      <Route path="/expert" component={ExpertPanel} />
       <Route component={NotFound} />
     </Switch>
   );

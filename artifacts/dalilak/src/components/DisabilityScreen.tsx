@@ -1,5 +1,13 @@
 import { useApp } from "@/context/AppContext";
-import { DISABILITY_TYPES } from "@/data/places";
+
+const DISABILITY_TYPES = [
+  { id: "wheelchair", icon: "♿", label: "كرسي متحرك" },
+  { id: "visual", icon: "👁️", label: "إعاقة بصرية" },
+  { id: "hearing", icon: "🦻", label: "إعاقة سمعية" },
+  { id: "elderly", icon: "👴", label: "كبار السن" },
+  { id: "cognitive", icon: "🧠", label: "إعاقة ذهنية" },
+  { id: "temporary", icon: "🩹", label: "إعاقة مؤقتة" },
+];
 
 export function DisabilityScreen() {
   const { disabilities, toggleDisability, setScreen } = useApp();

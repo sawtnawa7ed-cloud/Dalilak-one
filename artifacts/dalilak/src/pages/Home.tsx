@@ -12,13 +12,15 @@ export default function Home() {
   useEffect(() => {
     if (screen === "splash") {
       const t = setTimeout(() => setScreen("lang"), 2500);
-      return () => clearTimeout(t);
+      return () => { clearTimeout(t); };
     }
+    return undefined;
   }, [screen, setScreen]);
 
   if (screen === "splash") return <SplashScreen />;
   if (screen === "lang") return <LangScreen />;
   if (screen === "who") return <WhoScreen />;
   if (screen === "disability") return <DisabilityScreen />;
+  if (screen === "main") return <MainApp />;
   return <MainApp />;
 }
