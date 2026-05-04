@@ -1,7 +1,5 @@
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-
 export function apiUrl(path: string) {
-  return `${BASE}/api${path}`;
+  return `/api${path}`;
 }
 
 export async function apiFetch(path: string, options?: RequestInit, token?: string | null) {
