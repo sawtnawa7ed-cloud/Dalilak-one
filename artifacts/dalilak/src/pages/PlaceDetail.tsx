@@ -255,7 +255,7 @@ export default function PlaceDetail() {
 
       {showComplaint && <ComplaintModal onClose={() => setShowComplaint(false)} placeId={place.id} placeName={place.name} />}
       {showEvaluation && <EvaluationModal onClose={() => setShowEvaluation(false)} placeId={place.id} placeName={place.name} />}
-      {showPhoto && <AddPhotoModal onClose={() => setShowPhoto(false)} placeId={place.id} />}
+      {showPhoto && <AddPhotoModal onClose={() => setShowPhoto(false)} placeId={place.id} placeName={place.name} />}
     </div>
   );
 }

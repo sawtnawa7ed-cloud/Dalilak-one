@@ -20,7 +20,8 @@ export function SplashScreen() {
       </div>
 
       <h1 className="text-4xl font-black text-[#FFC107] tracking-widest mb-2">دليلك</h1>
-      <p className="text-sm text-[#aaa] mb-10">إمكانية الوصول في لبنان</p>
+      <p className="text-base text-[#FFC107]/70 font-semibold mb-1 text-center px-6">دليلك نحو مكان يستقبلك بكرامة</p>
+      <p className="text-xs text-[#666] mb-10">إمكانية الوصول في لبنان</p>
 
       <div className="w-40 h-1 bg-[#222] rounded-full overflow-hidden">
         <div
