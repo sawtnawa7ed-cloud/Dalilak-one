@@ -10,8 +10,7 @@ interface Props {
 export function AuthModal({ onClose }: Props) {
   const { login } = useApp();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [role, setRole] = useState<"visitor" | "expert">("visitor");
-  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,17 +34,10 @@ export function AuthModal({ onClose }: Props) {
         if (!form.name) return setError("أدخل الاسم");
         const data = await apiFetch("/auth/register", {
           method: "POST",
-          body: JSON.stringify({ name: form.name, email: form.email, password: form.password, role, phone: form.phone || undefined }),
+          body: JSON.stringify({ name: form.name, email: form.email, password: form.password, role: "visitor" }),
         });
-        if (role === "expert") {
-          setError("");
-          setMode("login");
-          setForm(f => ({ ...f, password: "" }));
-          setError("تم إرسال طلبك! في انتظار موافقة المدير.");
-        } else {
-          login(data.token, data.user);
-          onClose();
-        }
+        login(data.token, data.user);
+        onClose();
       }
     } catch (e: any) {
       setError(e.message || "حدث خطأ");
@@ -62,7 +54,7 @@ export function AuthModal({ onClose }: Props) {
             <X size={16} />
           </button>
           <h2 className="text-lg font-black text-primary">
-            {mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
+            {mode === "login" ? "تسجيل الدخول" : "إنشاء حساب زائر"}
           </h2>
         </div>
 
@@ -73,36 +65,23 @@ export function AuthModal({ onClose }: Props) {
               onClick={() => { setMode(m); setError(""); }}
               className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
             >
-              {m === "login" ? "دخول" : "حساب جديد"}
+              {m === "login" ? "دخول" : "حساب زائر جديد"}
             </button>
           ))}
         </div>
 
         {mode === "register" && (
-          <>
-            <div className="flex gap-2 p-1 bg-card rounded-xl">
-              {([["visitor", "زائر"], ["expert", "خبير ميداني"]] as const).map(([r, label]) => (
-                <button
-                  key={r}
-                  onClick={() => setRole(r)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${role === r ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            {role === "expert" && (
-              <p className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/30 rounded-xl p-3">
-                طلب الخبير يحتاج موافقة المدير قبل تفعيل الحساب.
-              </p>
-            )}
-          </>
+          <div className="bg-primary/10 border border-primary/30 rounded-xl p-3">
+            <p className="text-xs text-primary">
+              حسابات الخبراء يُنشئها المدير فقط. إذا كنت خبيراً، تواصل مع المدير للحصول على بيانات الدخول.
+            </p>
+          </div>
         )}
 
         <div className="space-y-3">
           {mode === "register" && (
             <input
-              placeholder="الاسم الكامل"
+              placeholder="الاسم الكامل *"
               value={form.name}
               onChange={set("name")}
               className="w-full bg-card border border-border rounded-xl py-3 px-4 text-sm text-right placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
@@ -110,7 +89,7 @@ export function AuthModal({ onClose }: Props) {
           )}
           <input
             type="email"
-            placeholder="البريد الإلكتروني"
+            placeholder="البريد الإلكتروني *"
             value={form.email}
             onChange={set("email")}
             className="w-full bg-card border border-border rounded-xl py-3 px-4 text-sm text-right placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
@@ -119,7 +98,7 @@ export function AuthModal({ onClose }: Props) {
           <div className="relative">
             <input
               type={showPass ? "text" : "password"}
-              placeholder="كلمة المرور"
+              placeholder="كلمة المرور *"
               value={form.password}
               onChange={set("password")}
               onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -129,20 +108,10 @@ export function AuthModal({ onClose }: Props) {
               {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
-          {mode === "register" && role === "expert" && (
-            <input
-              placeholder="رقم الهاتف (اختياري)"
-              value={form.phone}
-              onChange={set("phone")}
-              className="w-full bg-card border border-border rounded-xl py-3 px-4 text-sm text-right placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-            />
-          )}
         </div>
 
         {error && (
-          <p className={`text-sm text-center p-3 rounded-xl border ${error.includes("تم إرسال") ? "text-green-400 bg-green-400/10 border-green-400/30" : "text-red-400 bg-red-400/10 border-red-400/30"}`}>
-            {error}
-          </p>
+          <p className="text-sm text-red-400 bg-red-400/10 border border-red-400/30 rounded-xl p-3 text-center">{error}</p>
         )}
 
         <button
@@ -156,9 +125,9 @@ export function AuthModal({ onClose }: Props) {
 
         <div className="text-center text-xs text-muted-foreground pt-1">
           <span>حسابات تجريبية: </span>
-          <button onClick={() => { setForm({ name: "", email: "admin@dalilak.lb", password: "admin123", phone: "" }); setMode("login"); }} className="text-primary hover:underline">مدير</button>
+          <button onClick={() => { setForm({ name: "", email: "admin@dalilak.lb", password: "admin123" }); setMode("login"); }} className="text-primary hover:underline">مدير</button>
           {" | "}
-          <button onClick={() => { setForm({ name: "", email: "ahmad@dalilak.lb", password: "expert123", phone: "" }); setMode("login"); }} className="text-primary hover:underline">خبير</button>
+          <button onClick={() => { setForm({ name: "", email: "ahmad@dalilak.lb", password: "expert123" }); setMode("login"); }} className="text-primary hover:underline">خبير</button>
         </div>
       </div>
     </div>

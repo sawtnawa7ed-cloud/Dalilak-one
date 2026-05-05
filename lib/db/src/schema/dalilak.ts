@@ -90,6 +90,7 @@ export const complaintsTable = pgTable("complaints", {
   message: text("message").notNull(),
   senderName: text("sender_name").notNull(),
   senderEmail: text("sender_email").notNull(),
+  senderPhone: text("sender_phone"),
   status: complaintStatusEnum("status").notNull().default("open"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

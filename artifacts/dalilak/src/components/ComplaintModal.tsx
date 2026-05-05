@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function ComplaintModal({ onClose, placeId, placeName }: Props) {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -19,12 +19,19 @@ export function ComplaintModal({ onClose, placeId, placeName }: Props) {
 
   const submit = async () => {
     setError("");
-    if (!form.name || !form.email || !form.message) return setError("يرجى ملء جميع الحقول");
+    if (!form.name || !form.email || !form.phone || !form.message)
+      return setError("جميع الحقول مطلوبة بما فيها رقم الهاتف");
     setLoading(true);
     try {
       await apiFetch("/complaints", {
         method: "POST",
-        body: JSON.stringify({ senderName: form.name, senderEmail: form.email, message: form.message, placeId }),
+        body: JSON.stringify({
+          senderName: form.name,
+          senderEmail: form.email,
+          senderPhone: form.phone,
+          message: form.message,
+          placeId,
+        }),
       });
       setDone(true);
     } catch (e: any) {
@@ -55,27 +62,36 @@ export function ComplaintModal({ onClose, placeId, placeName }: Props) {
             <div className="text-5xl mb-3">✅</div>
             <p className="font-bold text-green-400">تم إرسال شكواك بنجاح!</p>
             <p className="text-sm text-muted-foreground mt-1">سيتواصل معك المدير قريباً</p>
-            <button onClick={onClose} className="mt-4 px-6 py-2 bg-primary text-primary-foreground font-bold rounded-xl text-sm">
-              إغلاق
-            </button>
+            <button onClick={onClose} className="mt-4 px-6 py-2 bg-primary text-primary-foreground font-bold rounded-xl text-sm">إغلاق</button>
           </div>
         ) : (
           <>
             <div className="space-y-3">
               <input
-                placeholder="اسمك"
+                placeholder="اسمك الكامل *"
                 value={form.name}
                 onChange={set("name")}
                 className="w-full bg-card border border-border rounded-xl py-3 px-4 text-sm text-right placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
               />
               <input
                 type="email"
-                placeholder="بريدك الإلكتروني"
+                placeholder="بريدك الإلكتروني *"
                 value={form.email}
                 onChange={set("email")}
                 className="w-full bg-card border border-border rounded-xl py-3 px-4 text-sm text-right placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
                 dir="ltr"
               />
+              <div className="relative">
+                <input
+                  type="tel"
+                  placeholder="رقم هاتفك *"
+                  value={form.phone}
+                  onChange={set("phone")}
+                  className="w-full bg-card border border-border rounded-xl py-3 px-4 text-sm text-right placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                  dir="ltr"
+                />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] text-red-400 font-bold">مطلوب</span>
+              </div>
               <textarea
                 placeholder="اكتب شكواك أو اقتراحك هنا..."
                 value={form.message}
