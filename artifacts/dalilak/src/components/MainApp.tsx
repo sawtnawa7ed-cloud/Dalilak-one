@@ -225,46 +225,51 @@ export function MainApp() {
             <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/40 px-4 pt-5 pb-3">
               <h2 className="text-base font-black text-center">حسابي</h2>
             </div>
-            <div className="px-4 pt-6 space-y-4">
+            <div className="px-4 pt-6 space-y-3">
               {authUser ? (
                 <>
                   {/* User card */}
-                  <div className="bg-card border border-border/50 rounded-2xl p-5 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                      <UserCircle size={30} className="text-primary" />
+                  <div className={`border rounded-2xl p-5 flex items-center gap-4 ${authUser.role === "admin" ? "bg-red-500/5 border-red-500/20" : authUser.role === "expert" ? "bg-primary/5 border-primary/20" : "bg-card border-border/50"}`}>
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 ${authUser.role === "admin" ? "bg-red-500/10" : "bg-primary/10"}`}>
+                      {authUser.role === "admin"
+                        ? <ShieldCheck size={28} className="text-red-400" />
+                        : authUser.role === "expert"
+                        ? <Accessibility size={28} className="text-primary" />
+                        : <UserCircle size={28} className="text-muted-foreground" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-black text-base truncate">{authUser.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{authUser.email}</p>
                       <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         authUser.role === "admin" ? "bg-red-500/20 text-red-400" :
                         authUser.role === "expert" ? "bg-primary/20 text-primary" :
                         "bg-card border border-border text-muted-foreground"}`}>
-                        {authUser.role === "admin" ? "مدير النظام" : authUser.role === "expert" ? "خبير ميداني" : "زائر"}
+                        {authUser.role === "admin" ? "🔐 مدير النظام" : authUser.role === "expert" ? "🏢 خبير / جمعية" : "زائر"}
                       </span>
                     </div>
                   </div>
 
-                  {/* Panel links */}
+                  {/* Admin panel */}
                   {authUser.role === "admin" && (
                     <button onClick={() => navigate("/admin")}
-                      className="w-full flex items-center gap-3 bg-card border border-border/50 rounded-2xl px-4 py-4 hover:border-primary/50 transition-colors">
+                      className="w-full flex items-center gap-3 bg-card border border-border/50 rounded-2xl px-4 py-4 hover:border-red-400/40 transition-colors">
                       <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
                         <ShieldCheck size={20} className="text-red-400" />
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex-1">
                         <p className="font-bold text-sm">لوحة المدير</p>
                         <p className="text-xs text-muted-foreground">إدارة الخبراء والأماكن والشكاوى</p>
                       </div>
                     </button>
                   )}
+
+                  {/* Expert panel */}
                   {authUser.role === "expert" && (
                     <button onClick={() => navigate("/expert")}
                       className="w-full flex items-center gap-3 bg-card border border-border/50 rounded-2xl px-4 py-4 hover:border-primary/50 transition-colors">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                         <Accessibility size={20} className="text-primary" />
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex-1">
                         <p className="font-bold text-sm">لوحة الخبير</p>
                         <p className="text-xs text-muted-foreground">إضافة الأماكن وتقييمها</p>
                       </div>
@@ -273,62 +278,78 @@ export function MainApp() {
 
                   {/* Complaint */}
                   <button onClick={() => setShowComplaintModal(true)}
-                    className="w-full flex items-center gap-3 bg-card border border-border/50 rounded-2xl px-4 py-4 hover:border-primary/50 transition-colors">
+                    className="w-full flex items-center gap-3 bg-card border border-border/50 rounded-2xl px-4 py-4 hover:border-amber-400/40 transition-colors">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
                       <span className="text-xl">📢</span>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-sm">تقديم شكوى</p>
-                      <p className="text-xs text-muted-foreground">أبلغنا عن مشكلة أو اقتراح</p>
+                    <div className="text-right flex-1">
+                      <p className="font-bold text-sm">تقديم شكوى أو اقتراح</p>
+                      <p className="text-xs text-muted-foreground">أبلغنا عن مشكلة في مكان ما</p>
                     </div>
                   </button>
 
                   {/* Logout */}
                   <button onClick={logout}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-red-500/10 border border-red-500/30 text-red-400 font-bold rounded-2xl text-sm hover:bg-red-500/20 transition-colors mt-2">
-                    <LogOut size={16} />
-                    تسجيل الخروج
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-red-500/10 border border-red-500/30 text-red-400 font-bold rounded-2xl text-sm hover:bg-red-500/20 transition-colors">
+                    <LogOut size={16} /> تسجيل الخروج
                   </button>
                 </>
               ) : (
                 <>
-                  {/* Not logged in */}
+                  {/* Not logged in — visitor can still use the app */}
                   <div className="text-center py-8">
                     <div className="w-20 h-20 rounded-full bg-card border border-border mx-auto flex items-center justify-center mb-4">
                       <UserCircle size={40} className="text-muted-foreground" />
                     </div>
-                    <p className="font-bold text-base">مرحباً بك في دليلك</p>
-                    <p className="text-sm text-muted-foreground mt-1">سجّل دخولك للوصول إلى كامل الميزات</p>
-                  </div>
-                  <button onClick={() => setShowAuthModal(true)}
-                    className="w-full py-4 bg-primary text-primary-foreground font-black rounded-2xl text-base flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-                    <LogIn size={18} />
-                    تسجيل الدخول
-                  </button>
-
-                  <div className="bg-card border border-border/50 rounded-2xl p-4 space-y-3 mt-2">
-                    <p className="text-xs font-bold text-center text-muted-foreground">تسجيل دخول تجريبي</p>
-                    {[
-                      { label: "مدير النظام", email: "admin@dalilak.lb", pass: "admin123", color: "text-red-400" },
-                      { label: "خبير ميداني", email: "ahmad@dalilak.lb", pass: "expert123", color: "text-primary" },
-                    ].map((u) => (
-                      <button key={u.email} onClick={() => { setShowAuthModal(true); }}
-                        className="w-full text-right px-3 py-2 bg-background border border-border rounded-xl text-xs hover:border-primary/40 transition-colors">
-                        <span className={`font-bold ${u.color}`}>{u.label}</span>
-                        <span className="text-muted-foreground"> · {u.email}</span>
-                      </button>
-                    ))}
+                    <p className="font-black text-base">أهلاً بك في دليلك ♿</p>
+                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                      يمكنك التصفح وتقديم الشكاوى بدون حساب
+                    </p>
                   </div>
 
+                  {/* Complaint — always accessible */}
                   <button onClick={() => setShowComplaintModal(true)}
-                    className="w-full flex items-center gap-3 bg-card border border-border/50 rounded-2xl px-4 py-4 hover:border-primary/50 transition-colors">
+                    className="w-full flex items-center gap-3 bg-card border border-amber-400/30 rounded-2xl px-4 py-4 hover:border-amber-400/60 transition-colors">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
                       <span className="text-xl">📢</span>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-sm">تقديم شكوى</p>
-                      <p className="text-xs text-muted-foreground">أبلغنا عن مشكلة أو اقتراح</p>
+                    <div className="text-right flex-1">
+                      <p className="font-bold text-sm">تقديم شكوى أو اقتراح</p>
+                      <p className="text-xs text-muted-foreground">لا تحتاج حساباً لتقديم شكوى</p>
                     </div>
+                  </button>
+
+                  {/* Divider */}
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="flex-1 h-px bg-border/40" />
+                    <p className="text-[11px] text-muted-foreground">للمدير والخبراء فقط</p>
+                    <div className="flex-1 h-px bg-border/40" />
+                  </div>
+
+                  {/* Admin login */}
+                  <button onClick={() => setShowAuthModal(true)}
+                    className="w-full flex items-center gap-3 bg-card border border-border/50 rounded-2xl px-4 py-4 hover:border-red-400/40 transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
+                      <ShieldCheck size={20} className="text-red-400" />
+                    </div>
+                    <div className="text-right flex-1">
+                      <p className="font-bold text-sm">دخول المدير</p>
+                      <p className="text-xs text-muted-foreground">إدارة التطبيق والخبراء</p>
+                    </div>
+                    <LogIn size={16} className="text-muted-foreground shrink-0" />
+                  </button>
+
+                  {/* Expert login */}
+                  <button onClick={() => setShowAuthModal(true)}
+                    className="w-full flex items-center gap-3 bg-card border border-border/50 rounded-2xl px-4 py-4 hover:border-primary/50 transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Accessibility size={20} className="text-primary" />
+                    </div>
+                    <div className="text-right flex-1">
+                      <p className="font-bold text-sm">دخول الخبراء والجمعيات</p>
+                      <p className="text-xs text-muted-foreground">أدخل اسم المستخدم وكلمة المرور</p>
+                    </div>
+                    <LogIn size={16} className="text-muted-foreground shrink-0" />
                   </button>
                 </>
               )}
