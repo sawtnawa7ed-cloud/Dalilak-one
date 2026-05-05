@@ -19,11 +19,8 @@ interface AppContextType {
   authToken: string | null;
   login: (token: string, user: AuthUser) => void;
   logout: () => void;
-  filters: {
-    governorateId?: number;
-    cityId?: number;
-    areaId?: number;
-  };
+  updateUser: (user: AuthUser) => void;
+  filters: { governorateId?: number; cityId?: number; areaId?: number };
   setFilters: (f: { governorateId?: number; cityId?: number; areaId?: number }) => void;
 }
 
@@ -63,11 +60,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("dalilak_user");
   };
 
+  const updateUser = (user: AuthUser) => {
+    setAuthUser(user);
+    localStorage.setItem("dalilak_user", JSON.stringify(user));
+  };
+
   return (
     <AppContext.Provider value={{
       searchQuery, setSearchQuery, activeCategory, setActiveCategory,
       favorites, toggleFavorite,
-      authUser, authToken, login, logout, filters, setFilters,
+      authUser, authToken, login, logout, updateUser,
+      filters, setFilters,
     }}>
       {children}
     </AppContext.Provider>

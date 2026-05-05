@@ -50,11 +50,14 @@ pnpm workspace monorepo using TypeScript with two products:
 - Complaint system (stored in DB, admin can reply by email)
 - Star ratings from expert evaluations
 
+### Auth System
+- **Admin (owner)**: logs in with email + password. Can change name/password from settings tab.
+- **Experts/Associations**: Admin creates them (name only), generates a unique code (`DAL-XXXXXX`). Expert logs in with code only via "دخول بالكود" tab.
+- **Visitors**: self-register with email + password.
+
 ### Test Credentials
-- Admin: `admin@dalilak.lb` / `admin123`
-- Expert (approved): `ahmad@dalilak.lb` / `expert123`
-- Expert (approved): `sara@dalilak.lb` / `expert123`
-- Pending expert: `rana@dalilak.lb` / `expert123`
+- Admin: `majdi@dalilak.lb` / `dalilak2o26`
+- Expert (code login): `DAL-AB3X7Y`
 - Visitor: `ali@dalilak.lb` / `visitor123`
 
 ### DB Schema (lib/db/src/schema/dalilak.ts)

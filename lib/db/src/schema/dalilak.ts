@@ -34,6 +34,7 @@ export const usersTable = pgTable("users", {
   role: roleEnum("role").notNull().default("visitor"),
   status: statusEnum("status").notNull().default("active"),
   phone: text("phone"),
+  accessCode: text("access_code").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

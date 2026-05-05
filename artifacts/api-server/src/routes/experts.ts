@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
-import { ListExpertsQueryParams, ApproveExpertParams, RejectExpertParams } from "@workspace/api-zod";
+import { eq } from "drizzle-orm";
 import { getUserFromRequest } from "./middleware";
 import * as crypto from "crypto";
 
@@ -12,97 +11,61 @@ function hashPassword(password: string): string {
   return crypto.createHash("sha256").update(password + "dalilak_salt").digest("hex");
 }
 
-function generatePassword(): string {
+function generateCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let pass = "EXP-";
-  for (let i = 0; i < 6; i++) pass += chars[Math.floor(Math.random() * chars.length)];
-  return pass;
+  let code = "DAL-";
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
 }
 
-function generateToken(userId: number): string {
-  return Buffer.from(`${userId}:${Date.now()}:dalilak`).toString("base64");
+function expertResponse(u: typeof usersTable.$inferSelect) {
+  return {
+    id: u.id, name: u.name, email: u.email, role: u.role,
+    status: u.status, phone: u.phone, accessCode: u.accessCode, createdAt: u.createdAt,
+  };
 }
 
+/* ── List all experts ── */
 router.get("/", async (req, res) => {
   const user = await getUserFromRequest(req);
   if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });
 
-  const parsed = ListExpertsQueryParams.safeParse(req.query);
-  let experts;
+  const experts = await db.select().from(usersTable)
+    .where(eq(usersTable.role, "expert"));
 
-  if (parsed.success && parsed.data.status) {
-    experts = await db.select({
-      id: usersTable.id, name: usersTable.name, email: usersTable.email,
-      role: usersTable.role, status: usersTable.status, phone: usersTable.phone, createdAt: usersTable.createdAt,
-    }).from(usersTable).where(and(eq(usersTable.role, "expert"), eq(usersTable.status, parsed.data.status as any)));
-  } else {
-    experts = await db.select({
-      id: usersTable.id, name: usersTable.name, email: usersTable.email,
-      role: usersTable.role, status: usersTable.status, phone: usersTable.phone, createdAt: usersTable.createdAt,
-    }).from(usersTable).where(eq(usersTable.role, "expert"));
-  }
-
-  return res.json(experts);
+  return res.json(experts.map(expertResponse));
 });
 
+/* ── Create expert (admin only) ── */
 router.post("/", async (req, res) => {
   const user = await getUserFromRequest(req);
   if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });
 
-  const { name, email, phone } = req.body;
-  if (!name || !email) return res.status(400).json({ error: "الاسم والبريد مطلوبان" });
+  const { name, phone, accessCode: providedCode } = req.body;
+  if (!name) return res.status(400).json({ error: "اسم الجمعية/الخبير مطلوب" });
 
-  const existing = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
-  if (existing.length > 0) return res.status(409).json({ error: "البريد الإلكتروني مستخدم مسبقاً" });
+  const code = (providedCode || generateCode()).toUpperCase().trim();
 
-  const generatedPassword = generatePassword();
+  // Check code uniqueness
+  const existing = await db.select().from(usersTable).where(eq(usersTable.accessCode, code)).limit(1);
+  if (existing.length > 0) return res.status(409).json({ error: "هذا الكود مستخدم مسبقاً، ولّد كوداً جديداً" });
+
+  const internalEmail = `${code.replace("DAL-", "").toLowerCase()}@expert.dalilak.lb`;
 
   const [expert] = await db.insert(usersTable).values({
     name,
-    email,
-    passwordHash: hashPassword(generatedPassword),
+    email: internalEmail,
+    passwordHash: hashPassword(code),
     role: "expert",
     status: "approved",
     phone: phone ?? null,
+    accessCode: code,
   }).returning();
 
-  return res.status(201).json({
-    id: expert.id, name: expert.name, email: expert.email,
-    role: expert.role, status: expert.status, createdAt: expert.createdAt,
-    generatedPassword,
-  });
+  return res.status(201).json(expertResponse(expert));
 });
 
-router.post("/:id/approve", async (req, res) => {
-  const user = await getUserFromRequest(req);
-  if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });
-
-  const parsed = ApproveExpertParams.safeParse(req.params);
-  if (!parsed.success) return res.status(400).json({ error: "معرف غير صحيح" });
-
-  const [updated] = await db.update(usersTable)
-    .set({ status: "approved" })
-    .where(eq(usersTable.id, parsed.data.id))
-    .returning();
-
-  return res.json({ id: updated.id, name: updated.name, email: updated.email, role: updated.role, status: updated.status, createdAt: updated.createdAt });
-});
-
-router.post("/:id/reject", async (req, res) => {
-  const user = await getUserFromRequest(req);
-  if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });
-
-  const parsed = RejectExpertParams.safeParse(req.params);
-  if (!parsed.success) return res.status(400).json({ error: "معرف غير صحيح" });
-
-  const [updated] = await db.update(usersTable)
-    .set({ status: "rejected" })
-    .where(eq(usersTable.id, parsed.data.id))
-    .returning();
-
-  return res.json({ id: updated.id, name: updated.name, email: updated.email, role: updated.role, status: updated.status, createdAt: updated.createdAt });
-});
-
+/* ── Block expert ── */
 router.post("/:id/block", async (req, res) => {
   const user = await getUserFromRequest(req);
   if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });
@@ -110,14 +73,11 @@ router.post("/:id/block", async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ error: "معرف غير صحيح" });
 
-  const [updated] = await db.update(usersTable)
-    .set({ status: "rejected" })
-    .where(eq(usersTable.id, id))
-    .returning();
-
-  return res.json({ id: updated.id, name: updated.name, status: updated.status });
+  const [updated] = await db.update(usersTable).set({ status: "rejected" }).where(eq(usersTable.id, id)).returning();
+  return res.json(expertResponse(updated));
 });
 
+/* ── Unblock expert ── */
 router.post("/:id/unblock", async (req, res) => {
   const user = await getUserFromRequest(req);
   if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });
@@ -125,14 +85,11 @@ router.post("/:id/unblock", async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ error: "معرف غير صحيح" });
 
-  const [updated] = await db.update(usersTable)
-    .set({ status: "approved" })
-    .where(eq(usersTable.id, id))
-    .returning();
-
-  return res.json({ id: updated.id, name: updated.name, status: updated.status });
+  const [updated] = await db.update(usersTable).set({ status: "approved" }).where(eq(usersTable.id, id)).returning();
+  return res.json(expertResponse(updated));
 });
 
+/* ── Delete expert ── */
 router.delete("/:id", async (req, res) => {
   const user = await getUserFromRequest(req);
   if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });

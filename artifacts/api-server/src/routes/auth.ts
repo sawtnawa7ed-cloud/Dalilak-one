@@ -3,7 +3,7 @@ import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import * as crypto from "crypto";
-import { RegisterUserBody, LoginUserBody } from "@workspace/api-zod";
+import { getUserFromRequest } from "./middleware";
 
 const router = Router();
 
@@ -15,71 +15,89 @@ function generateToken(userId: number): string {
   return Buffer.from(`${userId}:${Date.now()}:dalilak`).toString("base64");
 }
 
-router.post("/register", async (req, res) => {
-  const parsed = RegisterUserBody.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "بيانات غير صحيحة" });
+function userResponse(user: typeof usersTable.$inferSelect) {
+  return {
+    id: user.id, name: user.name, email: user.email,
+    role: user.role, status: user.status, createdAt: user.createdAt,
+  };
+}
 
-  const { name, email, password, role, phone } = parsed.data;
+/* ── Email + Password login (admin & visitor) ── */
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: "أدخل البريد وكلمة المرور" });
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+  if (!user || user.passwordHash !== hashPassword(password)) {
+    return res.status(401).json({ error: "البريد أو كلمة المرور غير صحيحة" });
+  }
+  if (user.role === "expert" && user.status === "rejected") {
+    return res.status(403).json({ error: "هذا الحساب موقوف، تواصل مع المدير" });
+  }
+
+  return res.json({ token: generateToken(user.id), user: userResponse(user) });
+});
+
+/* ── Access Code login (experts / associations) ── */
+router.post("/code-login", async (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: "أدخل الكود" });
+
+  const [user] = await db.select().from(usersTable)
+    .where(eq(usersTable.accessCode, String(code).toUpperCase().trim()))
+    .limit(1);
+
+  if (!user) return res.status(401).json({ error: "الكود غير صحيح" });
+  if (user.status === "rejected") return res.status(403).json({ error: "هذا الحساب موقوف، تواصل مع المدير" });
+
+  return res.json({ token: generateToken(user.id), user: userResponse(user) });
+});
+
+/* ── Visitor self-registration ── */
+router.post("/register", async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) return res.status(400).json({ error: "جميع الحقول مطلوبة" });
 
   const existing = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
   if (existing.length > 0) return res.status(409).json({ error: "البريد الإلكتروني مستخدم مسبقاً" });
 
-  const status = role === "expert" ? "pending" : "active";
-
   const [user] = await db.insert(usersTable).values({
-    name,
-    email,
-    passwordHash: hashPassword(password),
-    role: role as "visitor" | "expert",
-    status: status as "pending" | "active",
-    phone: phone ?? null,
+    name, email, passwordHash: hashPassword(password), role: "visitor", status: "active",
   }).returning();
 
-  const token = generateToken(user.id);
-  return res.status(201).json({
-    token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status, createdAt: user.createdAt },
-  });
+  return res.status(201).json({ token: generateToken(user.id), user: userResponse(user) });
 });
 
-router.post("/login", async (req, res) => {
-  const parsed = LoginUserBody.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "بيانات غير صحيحة" });
-
-  const { email, password } = parsed.data;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
-
-  if (!user || user.passwordHash !== hashPassword(password)) {
-    return res.status(401).json({ error: "البريد أو كلمة المرور غير صحيحة" });
-  }
-
-  if (user.role === "expert" && user.status === "pending") {
-    return res.status(403).json({ error: "حسابك قيد المراجعة من قبل المدير" });
-  }
-  if (user.role === "expert" && user.status === "rejected") {
-    return res.status(403).json({ error: "تم رفض طلبك من قبل المدير" });
-  }
-
-  const token = generateToken(user.id);
-  return res.json({
-    token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status, createdAt: user.createdAt },
-  });
-});
-
+/* ── Get current user ── */
 router.get("/me", async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ error: "غير مصرح" });
+  const user = await getUserFromRequest(req);
+  if (!user) return res.status(401).json({ error: "غير مصرح" });
+  return res.json(userResponse(user));
+});
 
-  try {
-    const decoded = Buffer.from(authHeader.replace("Bearer ", ""), "base64").toString();
-    const userId = parseInt(decoded.split(":")[0]);
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-    if (!user) return res.status(401).json({ error: "غير مصرح" });
-    return res.json({ id: user.id, name: user.name, email: user.email, role: user.role, status: user.status, createdAt: user.createdAt });
-  } catch {
-    return res.status(401).json({ error: "غير مصرح" });
+/* ── Update profile (admin or any logged-in user) ── */
+router.put("/profile", async (req, res) => {
+  const user = await getUserFromRequest(req);
+  if (!user) return res.status(401).json({ error: "غير مصرح" });
+
+  const { name, currentPassword, newPassword } = req.body;
+  const updates: Partial<typeof usersTable.$inferInsert> = {};
+
+  if (name && name.trim()) updates.name = name.trim();
+
+  if (newPassword) {
+    if (!currentPassword) return res.status(400).json({ error: "أدخل كلمة المرور الحالية" });
+    if (user.passwordHash !== hashPassword(currentPassword)) {
+      return res.status(401).json({ error: "كلمة المرور الحالية غير صحيحة" });
+    }
+    if (newPassword.length < 6) return res.status(400).json({ error: "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل" });
+    updates.passwordHash = hashPassword(newPassword);
   }
+
+  if (Object.keys(updates).length === 0) return res.status(400).json({ error: "لا توجد تغييرات" });
+
+  const [updated] = await db.update(usersTable).set(updates).where(eq(usersTable.id, user.id)).returning();
+  return res.json(userResponse(updated));
 });
 
 export default router;

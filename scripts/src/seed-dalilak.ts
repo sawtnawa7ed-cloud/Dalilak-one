@@ -101,18 +101,16 @@ async function main() {
 
   // Users
   const users = await db.insert(usersTable).values([
-    { name: "مدير النظام", email: "admin@dalilak.lb", passwordHash: hash("admin123"), role: "admin", status: "active" },
-    { name: "أحمد خبير", email: "ahmad@dalilak.lb", passwordHash: hash("expert123"), role: "expert", status: "approved" },
-    { name: "سارة الخبيرة", email: "sara@dalilak.lb", passwordHash: hash("expert123"), role: "expert", status: "approved" },
+    { name: "مجدي", email: "majdi@dalilak.lb", passwordHash: hash("dalilak2o26"), role: "admin", status: "active" },
+    { name: "جمعية الإمكانية", email: "dal-ab3x7y@expert.dalilak.lb", passwordHash: hash("DAL-AB3X7Y"), role: "expert", status: "approved", accessCode: "DAL-AB3X7Y" },
     { name: "علي زائر", email: "ali@dalilak.lb", passwordHash: hash("visitor123"), role: "visitor", status: "active" },
-    { name: "رنا طلب خبير", email: "rana@dalilak.lb", passwordHash: hash("expert123"), role: "expert", status: "pending" },
   ]).returning();
 
   console.log(`✅ ${users.length} users`);
 
   const admin = users.find(u => u.role === "admin")!;
-  const expert1 = users.find(u => u.email === "ahmad@dalilak.lb")!;
-  const expert2 = users.find(u => u.email === "sara@dalilak.lb")!;
+  const expert1 = users.find(u => u.role === "expert")!;
+  const expert2 = expert1;
 
   const ashrafieh = areas.find(a => a.name === "الأشرفية")!;
   const hamra = areas.find(a => a.name === "الحمرا")!;
@@ -308,9 +306,8 @@ async function main() {
 
   console.log("\n✅ Seeding complete!");
   console.log("\n📋 Credentials:");
-  console.log("  Admin:   admin@dalilak.lb / admin123");
-  console.log("  Expert:  ahmad@dalilak.lb / expert123");
-  console.log("  Expert:  sara@dalilak.lb  / expert123");
+  console.log("  Admin:   majdi@dalilak.lb / dalilak2o26");
+  console.log("  Expert:  code DAL-AB3X7Y  (via code-login)");
   console.log("  Visitor: ali@dalilak.lb   / visitor123");
 }
 
