@@ -1,7 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-
-type Lang = "ar" | "en" | "fr";
-type Screen = "splash" | "lang" | "who" | "disability" | "main";
+import React, { createContext, useContext, useState } from "react";
 
 interface AuthUser {
   id: number;
@@ -12,20 +9,12 @@ interface AuthUser {
 }
 
 interface AppContextType {
-  lang: Lang;
-  setLang: (l: Lang) => void;
-  userType: string | null;
-  setUserType: (t: string | null) => void;
-  disabilities: string[];
-  toggleDisability: (d: string) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   activeCategory: string;
   setActiveCategory: (c: string) => void;
   favorites: number[];
   toggleFavorite: (id: number) => void;
-  screen: Screen;
-  setScreen: (s: Screen) => void;
   authUser: AuthUser | null;
   authToken: string | null;
   login: (token: string, user: AuthUser) => void;
@@ -41,23 +30,16 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Lang>("ar");
-  const [userType, setUserType] = useState<string | null>(null);
-  const [disabilities, setDisabilities] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("الكل");
   const [favorites, setFavorites] = useState<number[]>(() => {
     try { return JSON.parse(localStorage.getItem("dalilak_favs") || "[]"); } catch { return []; }
   });
-  const [screen, setScreen] = useState<Screen>("splash");
   const [authUser, setAuthUser] = useState<AuthUser | null>(() => {
     try { return JSON.parse(localStorage.getItem("dalilak_user") || "null"); } catch { return null; }
   });
   const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem("dalilak_token"));
   const [filters, setFilters] = useState<{ governorateId?: number; cityId?: number; areaId?: number }>({});
-
-  const toggleDisability = (d: string) =>
-    setDisabilities((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
 
   const toggleFavorite = (id: number) => {
     setFavorites((prev) => {
@@ -83,9 +65,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      lang, setLang, userType, setUserType, disabilities, toggleDisability,
       searchQuery, setSearchQuery, activeCategory, setActiveCategory,
-      favorites, toggleFavorite, screen, setScreen,
+      favorites, toggleFavorite,
       authUser, authToken, login, logout, filters, setFilters,
     }}>
       {children}
