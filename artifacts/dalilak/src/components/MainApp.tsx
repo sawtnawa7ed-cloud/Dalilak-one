@@ -14,7 +14,7 @@ import { BottomNav } from "./BottomNav";
 
 type Tab = "home" | "search" | "favorites" | "profile";
 
-const CATEGORIES = ["الكل", "مستشفى", "مركز تسوق", "مطعم", "جامعة", "فندق", "متحف", "موقع سياحي", "مطار", "بنك", "مركز صحي", "ملعب رياضي", "حديقة عامة"];
+const BASE_CATEGORIES = ["مستشفى", "مركز تسوق", "مطعم", "جامعة", "فندق", "متحف", "موقع سياحي", "مطار", "بنك", "مركز صحي", "ملعب رياضي", "حديقة عامة", "مسجد", "كنيسة"];
 
 function featuresList(p: ApiPlace): string[] {
   const f: string[] = [];
@@ -53,6 +53,12 @@ export function MainApp() {
   const favPlaces = allPlaces.filter((p) => favorites.includes(p.id));
   const displayPlaces = places;
 
+  // Build dynamic categories: base list + any custom ones found in places
+  const dynamicCategories = ["الكل", ...Array.from(new Set([
+    ...BASE_CATEGORIES,
+    ...allPlaces.map(p => p.category).filter(Boolean),
+  ]))];
+
   return (
     <div className="flex justify-center bg-[#060606] min-h-screen" dir="rtl">
       <div className="w-full max-w-[430px] relative bg-background min-h-screen flex flex-col">
@@ -78,7 +84,7 @@ export function MainApp() {
 
             {/* Categories */}
             <div className="flex gap-2 px-4 pt-4 pb-1 overflow-x-auto scrollbar-hide">
-              {CATEGORIES.map((cat) => (
+              {dynamicCategories.map((cat) => (
                 <button key={cat} onClick={() => setActiveCategory(cat)}
                   className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-card border border-border/60 text-muted-foreground"}`}>
                   {cat}
@@ -171,7 +177,7 @@ export function MainApp() {
 
               {/* Category filter */}
               <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
-                {CATEGORIES.map((cat) => (
+                {dynamicCategories.map((cat) => (
                   <button key={cat} onClick={() => setActiveCategory(cat)}
                     className={`shrink-0 px-3 py-1 rounded-full text-xs font-bold ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-card border border-border/60 text-muted-foreground"}`}>
                     {cat}

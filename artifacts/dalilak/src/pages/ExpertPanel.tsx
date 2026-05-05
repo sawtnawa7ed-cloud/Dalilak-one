@@ -5,7 +5,7 @@ import { useApp } from "@/context/AppContext";
 import { useListPlaces, useListGovernorates, useListCities } from "@workspace/api-client-react";
 import { apiFetch } from "@/lib/api";
 
-const CATEGORIES = ["مستشفى", "مركز تسوق", "مطعم", "جامعة", "فندق", "متحف", "موقع سياحي", "مطار", "بنك", "مركز صحي", "ملعب رياضي", "حديقة عامة"];
+const CATEGORIES = ["مستشفى", "مركز تسوق", "مطعم", "جامعة", "فندق", "متحف", "موقع سياحي", "مطار", "بنك", "مركز صحي", "ملعب رياضي", "حديقة عامة", "مسجد", "كنيسة", "أخرى"];
 
 /* ── Leaflet map picker ── */
 function MapPicker({ lat, lng, onChange }: { lat: string; lng: string; onChange: (lat: string, lng: string) => void }) {
@@ -88,7 +88,7 @@ export default function ExpertPanel() {
   const [tab, setTab] = useState<"places" | "add">("places");
 
   const [form, setForm] = useState({
-    name: "", category: "مستشفى", address: "", lat: "", lng: "",
+    name: "", category: "مستشفى", customCategory: "", address: "", lat: "", lng: "",
     phone: "", description: "", governorateId: "", cityId: "", areaId: "",
   });
   const [locLoading, setLocLoading] = useState(false);
@@ -121,13 +121,15 @@ export default function ExpertPanel() {
     if (!form.lat || !form.lng) return setError("يرجى تحديد موقع المكان على الخريطة");
     if (!form.governorateId) return setError("اختر المحافظة");
     if (!form.cityId) return setError("اختر المدينة / القضاء");
+    const finalCategory = form.category === "أخرى" ? form.customCategory.trim() : form.category;
+    if (!finalCategory) return setError("أدخل اسم الفئة المخصصة");
     setSaving(true);
     try {
       await apiFetch("/places", {
         method: "POST",
         body: JSON.stringify({
           name: form.name.trim(),
-          category: form.category,
+          category: finalCategory,
           address: form.address.trim(),
           lat: parseFloat(form.lat),
           lng: parseFloat(form.lng),
@@ -140,7 +142,7 @@ export default function ExpertPanel() {
       }, authToken);
       await refetchPlaces();
       setSuccess("✅ تم إضافة المكان بنجاح! يمكنك الآن إضافة تقييم وصور من صفحة المكان.");
-      setForm({ name: "", category: "مستشفى", address: "", lat: "", lng: "", phone: "", description: "", governorateId: "", cityId: "", areaId: "" });
+      setForm({ name: "", category: "مستشفى", customCategory: "", address: "", lat: "", lng: "", phone: "", description: "", governorateId: "", cityId: "", areaId: "" });
       setTab("places");
     } catch (e: any) {
       setError(e.message || "حدث خطأ أثناء الحفظ");
@@ -262,6 +264,14 @@ export default function ExpertPanel() {
                 className="w-full bg-card border border-border rounded-xl py-3 px-4 text-sm text-right focus:outline-none focus:border-primary/50 text-foreground">
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+              {form.category === "أخرى" && (
+                <input
+                  value={form.customCategory}
+                  onChange={e => setForm(f => ({ ...f, customCategory: e.target.value }))}
+                  placeholder="اكتب اسم الفئة، مثال: مسجد، كنيسة، دار رعاية..."
+                  className="mt-2 w-full bg-card border border-primary/40 rounded-xl py-3 px-4 text-sm text-right placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                />
+              )}
             </div>
 
             {/* Governorate */}

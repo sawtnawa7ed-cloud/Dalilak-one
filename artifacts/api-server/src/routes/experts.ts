@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { usersTable, evaluationsTable, photosTable, placesTable } from "@workspace/db";
+import { eq, sql } from "drizzle-orm";
 import { getUserFromRequest } from "./middleware";
 import * as crypto from "crypto";
 
@@ -93,6 +93,10 @@ router.delete("/:id", async (req, res) => {
   if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ error: "معرف غير صحيح" });
+  // Clear FK references before deleting the user
+  await db.delete(evaluationsTable).where(eq(evaluationsTable.expertId, id));
+  await db.execute(sql`UPDATE ${photosTable} SET uploaded_by_id = NULL WHERE uploaded_by_id = ${id}`);
+  await db.execute(sql`UPDATE ${placesTable} SET added_by_id = NULL WHERE added_by_id = ${id}`);
   await db.delete(usersTable).where(eq(usersTable.id, id));
   return res.status(204).send();
 });
