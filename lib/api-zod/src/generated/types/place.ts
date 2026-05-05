@@ -27,6 +27,8 @@ export interface Place {
   hasRamp?: boolean;
   hasElevator?: boolean;
   hasAccessibleBathroom?: boolean;
-  hasAccessibleParking?: boolean;
+  hasWideSpace?: boolean;
+  hasGoodStaff?: boolean;
+  hasIndoorSigns?: boolean;
   createdAt: string;
 }

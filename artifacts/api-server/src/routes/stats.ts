@@ -19,7 +19,8 @@ router.get("/", async (_req, res) => {
       cityId: placesTable.cityId, areaId: placesTable.areaId, isVerified: placesTable.isVerified,
       hasRamp: placesTable.hasRamp, hasElevator: placesTable.hasElevator,
       hasAccessibleBathroom: placesTable.hasAccessibleBathroom,
-      hasAccessibleParking: placesTable.hasAccessibleParking,
+      hasWideSpace: placesTable.hasWideSpace, hasGoodStaff: placesTable.hasGoodStaff,
+      hasIndoorSigns: placesTable.hasIndoorSigns,
       coverPhoto: placesTable.coverPhoto, createdAt: placesTable.createdAt,
       governorateName: governoratesTable.name,
     })

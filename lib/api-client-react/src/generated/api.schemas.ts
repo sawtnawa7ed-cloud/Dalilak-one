@@ -102,7 +102,9 @@ export interface Place {
   hasRamp?: boolean;
   hasElevator?: boolean;
   hasAccessibleBathroom?: boolean;
-  hasAccessibleParking?: boolean;
+  hasWideSpace?: boolean;
+  hasGoodStaff?: boolean;
+  hasIndoorSigns?: boolean;
   createdAt: string;
 }
 
@@ -123,10 +125,9 @@ export interface Evaluation {
   hasRamp: boolean;
   hasElevator: boolean;
   hasAccessibleBathroom: boolean;
-  hasAccessibleParking: boolean;
-  hasSignLanguage?: boolean;
-  hasBraille?: boolean;
-  rampCondition?: string;
+  hasWideSpace: boolean;
+  hasGoodStaff: boolean;
+  hasIndoorSigns: boolean;
   notes?: string;
   rating: number;
   createdAt: string;
@@ -138,23 +139,13 @@ export type PlaceDetail = Place & {
   description?: string;
 };
 
-export type EvaluationBodyRampCondition =
-  (typeof EvaluationBodyRampCondition)[keyof typeof EvaluationBodyRampCondition];
-
-export const EvaluationBodyRampCondition = {
-  good: "good",
-  fair: "fair",
-  poor: "poor",
-} as const;
-
 export interface EvaluationBody {
   hasRamp: boolean;
   hasElevator: boolean;
   hasAccessibleBathroom: boolean;
-  hasAccessibleParking: boolean;
-  hasSignLanguage?: boolean;
-  hasBraille?: boolean;
-  rampCondition?: EvaluationBodyRampCondition;
+  hasWideSpace: boolean;
+  hasGoodStaff: boolean;
+  hasIndoorSigns: boolean;
   notes?: string;
   /**
    * @minimum 1

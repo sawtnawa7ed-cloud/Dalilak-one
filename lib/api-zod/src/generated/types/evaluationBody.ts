@@ -5,16 +5,14 @@
  * Dalilak API - Lebanon Accessibility Guide
  * OpenAPI spec version: 0.1.0
  */
-import type { EvaluationBodyRampCondition } from "./evaluationBodyRampCondition";
 
 export interface EvaluationBody {
   hasRamp: boolean;
   hasElevator: boolean;
   hasAccessibleBathroom: boolean;
-  hasAccessibleParking: boolean;
-  hasSignLanguage?: boolean;
-  hasBraille?: boolean;
-  rampCondition?: EvaluationBodyRampCondition;
+  hasWideSpace: boolean;
+  hasGoodStaff: boolean;
+  hasIndoorSigns: boolean;
   notes?: string;
   /**
    * @minimum 1

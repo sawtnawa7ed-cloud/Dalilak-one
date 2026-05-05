@@ -14,10 +14,9 @@ export interface Evaluation {
   hasRamp: boolean;
   hasElevator: boolean;
   hasAccessibleBathroom: boolean;
-  hasAccessibleParking: boolean;
-  hasSignLanguage?: boolean;
-  hasBraille?: boolean;
-  rampCondition?: string;
+  hasWideSpace: boolean;
+  hasGoodStaff: boolean;
+  hasIndoorSigns: boolean;
   notes?: string;
   rating: number;
   createdAt: string;

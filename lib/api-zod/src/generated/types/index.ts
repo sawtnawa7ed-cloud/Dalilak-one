@@ -15,7 +15,6 @@ export * from "./complaintStatus";
 export * from "./createPlaceBody";
 export * from "./evaluation";
 export * from "./evaluationBody";
-export * from "./evaluationBodyRampCondition";
 export * from "./governorate";
 export * from "./healthStatus";
 export * from "./listAreasParams";

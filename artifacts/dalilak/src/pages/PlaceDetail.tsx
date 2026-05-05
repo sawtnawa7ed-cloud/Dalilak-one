@@ -46,11 +46,13 @@ export default function PlaceDetail() {
   }
 
   const isFav = favorites.includes(place.id);
-  const features: { label: string; ok: boolean }[] = [
-    { label: "منحدر للكراسي", ok: !!place.hasRamp },
-    { label: "مصعد", ok: !!place.hasElevator },
-    { label: "حمام مناسب", ok: !!place.hasAccessibleBathroom },
-    { label: "موقف مخصص", ok: !!place.hasAccessibleParking },
+  const features: { emoji: string; label: string; ok: boolean }[] = [
+    { emoji: "♿", label: "منحدر للكراسي",       ok: !!place.hasRamp },
+    { emoji: "🛗", label: "مصعد مناسب",          ok: !!place.hasElevator },
+    { emoji: "🚽", label: "حمام لذوي الإعاقة",   ok: !!place.hasAccessibleBathroom },
+    { emoji: "📐", label: "مساحة كافية",         ok: !!(place as any).hasWideSpace },
+    { emoji: "🤝", label: "تعامل الموظفين",      ok: !!(place as any).hasGoodStaff },
+    { emoji: "🪧", label: "إرشادات داخلية",      ok: !!(place as any).hasIndoorSigns },
   ];
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`;
   const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
@@ -151,11 +153,14 @@ export default function PlaceDetail() {
               {place.isVerified ? (
                 <div className="grid grid-cols-2 gap-2">
                   {features.map((f) => (
-                    <div key={f.label} className={`flex items-center gap-2 rounded-xl px-3 py-3 border ${f.ok ? "bg-primary/10 border-primary/30" : "bg-card border-border/50 opacity-50"}`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${f.ok ? "bg-primary/20" : "bg-muted"}`}>
-                        {f.ok ? <CheckCircle size={13} className="text-primary" /> : <X size={13} className="text-muted-foreground" />}
+                    <div key={f.label} className={`flex items-center gap-2 rounded-xl px-3 py-3 border transition-colors ${f.ok ? "bg-primary/10 border-primary/30" : "bg-card border-border/50 opacity-40"}`}>
+                      <span className="text-base shrink-0 leading-none">{f.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-bold">{f.label}</span>
                       </div>
-                      <span className="text-xs font-medium">{f.label}</span>
+                      {f.ok
+                        ? <CheckCircle size={13} className="text-primary shrink-0" />
+                        : <X size={13} className="text-muted-foreground shrink-0" />}
                     </div>
                   ))}
                 </div>
