@@ -3,13 +3,9 @@ import { db } from "@workspace/db";
 import { usersTable, evaluationsTable, photosTable, placesTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { getUserFromRequest } from "./middleware";
-import * as crypto from "crypto";
+import { hashPassword } from "./auth";
 
 const router = Router();
-
-function hashPassword(p: string) {
-  return crypto.createHash("sha256").update(p + "dalilak_salt").digest("hex");
-}
 
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function rand(n: number) {
@@ -57,7 +53,7 @@ router.post("/", async (req, res) => {
   const [expert] = await db.insert(usersTable).values({
     name,
     email: internalEmail,
-    passwordHash: hashPassword(password),
+    passwordHash: await hashPassword(password),
     role: "expert",
     status: "approved",
     phone: phone ?? null,
@@ -93,7 +89,6 @@ router.delete("/:id", async (req, res) => {
   if (!user || user.role !== "admin") return res.status(403).json({ error: "صلاحية المدير فقط" });
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ error: "معرف غير صحيح" });
-  // Clear FK references before deleting the user
   await db.delete(evaluationsTable).where(eq(evaluationsTable.expertId, id));
   await db.execute(sql`UPDATE ${photosTable} SET uploaded_by_id = NULL WHERE uploaded_by_id = ${id}`);
   await db.execute(sql`UPDATE ${placesTable} SET added_by_id = NULL WHERE added_by_id = ${id}`);

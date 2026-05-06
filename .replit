@@ -45,3 +45,8 @@ externalPort = 3003
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+JWT_SECRET = "16cda5a8114c05d6b65949da829777bf970d63b2b6469b48c8f2dc8d62dd963364a7b4424c652a6054ec42531826466a"

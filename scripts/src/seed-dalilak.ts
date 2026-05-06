@@ -3,10 +3,10 @@ import {
   governoratesTable, citiesTable, areasTable, usersTable,
   placesTable, evaluationsTable
 } from "@workspace/db";
-import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
-function hash(pw: string) {
-  return crypto.createHash("sha256").update(pw + "dalilak_salt").digest("hex");
+async function hash(pw: string): Promise<string> {
+  return bcrypt.hash(pw, 12);
 }
 
 async function main() {
@@ -100,10 +100,15 @@ async function main() {
   console.log(`✅ ${areas.length} areas`);
 
   // Users
+  const [adminHash, expertHash, visitorHash] = await Promise.all([
+    hash("dalilak2o26"),
+    hash("DAL-AB3X7Y"),
+    hash("visitor123"),
+  ]);
   const users = await db.insert(usersTable).values([
-    { name: "مجدي", email: "majdi@dalilak.lb", passwordHash: hash("dalilak2o26"), role: "admin", status: "active" },
-    { name: "جمعية الإمكانية", email: "dal-ab3x7y@expert.dalilak.lb", passwordHash: hash("DAL-AB3X7Y"), role: "expert", status: "approved", accessCode: "DAL-AB3X7Y" },
-    { name: "علي زائر", email: "ali@dalilak.lb", passwordHash: hash("visitor123"), role: "visitor", status: "active" },
+    { name: "مجدي", email: "majdi@dalilak.lb", passwordHash: adminHash, role: "admin", status: "active" },
+    { name: "جمعية الإمكانية", email: "dal-ab3x7y@expert.dalilak.lb", passwordHash: expertHash, role: "expert", status: "approved", accessCode: "DAL-AB3X7Y" },
+    { name: "علي زائر", email: "ali@dalilak.lb", passwordHash: visitorHash, role: "visitor", status: "active" },
   ]).returning();
 
   console.log(`✅ ${users.length} users`);
