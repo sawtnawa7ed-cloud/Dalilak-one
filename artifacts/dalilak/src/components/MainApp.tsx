@@ -84,8 +84,13 @@ export function MainApp() {
 
             {/* Hero welcome */}
             <div className="px-4 pt-6 pb-4 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-3">
-                <span className="text-4xl">♿</span>
+              <div className="inline-flex items-center justify-center mb-3">
+                <img
+                  src="/dalilak/logo.png"
+                  alt="دليلك"
+                  className="w-24 h-24 object-contain rounded-full animate-spin"
+                  style={{ animationDuration: "6s", animationTimingFunction: "linear" }}
+                />
               </div>
               <h2 className="text-xl font-black text-foreground leading-snug">نحو مكان</h2>
               <h2 className="text-xl font-black text-primary leading-snug">يستقبلك بكرامة</h2>
