@@ -50,9 +50,9 @@ export default function PlaceDetail() {
     { emoji: "♿", label: "منحدر للكراسي",       ok: !!place.hasRamp },
     { emoji: "🛗", label: "مصعد مناسب",          ok: !!place.hasElevator },
     { emoji: "🚽", label: "حمام لذوي الإعاقة",   ok: !!place.hasAccessibleBathroom },
-    { emoji: "📐", label: "مساحة كافية",         ok: !!(place as any).hasWideSpace },
-    { emoji: "🤝", label: "تعامل الموظفين",      ok: !!(place as any).hasGoodStaff },
-    { emoji: "🪧", label: "إرشادات داخلية",      ok: !!(place as any).hasIndoorSigns },
+    { emoji: "📐", label: "مساحة كافية",         ok: !!place.hasWideSpace },
+    { emoji: "🤝", label: "تعامل الموظفين",      ok: !!place.hasGoodStaff },
+    { emoji: "🪧", label: "إرشادات داخلية",      ok: !!place.hasIndoorSigns },
   ];
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`;
   const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;

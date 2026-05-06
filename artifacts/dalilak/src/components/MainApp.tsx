@@ -21,9 +21,9 @@ function featuresList(p: ApiPlace): string[] {
   if (p.hasRamp) f.push("♿ منحدر");
   if (p.hasElevator) f.push("🛗 مصعد");
   if (p.hasAccessibleBathroom) f.push("🚽 حمام");
-  if ((p as any).hasWideSpace) f.push("📐 مساحة");
-  if ((p as any).hasGoodStaff) f.push("🤝 موظفون");
-  if ((p as any).hasIndoorSigns) f.push("🪧 إرشادات");
+  if (p.hasWideSpace) f.push("📐 مساحة");
+  if (p.hasGoodStaff) f.push("🤝 موظفون");
+  if (p.hasIndoorSigns) f.push("🪧 إرشادات");
   return f;
 }
 

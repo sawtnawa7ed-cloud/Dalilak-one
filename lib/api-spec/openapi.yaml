@@ -698,7 +698,9 @@ components:
           type: string
         senderEmail:
           type: string
-      required: [message, senderName, senderEmail]
+        senderPhone:
+          type: string
+      required: [message, senderName, senderEmail, senderPhone]
 
     Complaint:
       type: object

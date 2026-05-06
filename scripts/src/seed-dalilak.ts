@@ -127,7 +127,7 @@ async function main() {
       description: "مستشفى جامعي بمرافق حديثة، ويُعدّ من أفضل المستشفيات في لبنان من حيث إمكانية الوصول",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: hamra.id,
       addedById: expert1.id, isVerified: true,
-      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true,
+      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true,
     },
     {
       name: "مطار رفيق الحريري الدولي",
@@ -138,7 +138,7 @@ async function main() {
       description: "المطار الرئيسي للبنان، يوفر خدمات متكاملة لذوي الاحتياجات الخاصة",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: null,
       addedById: expert1.id, isVerified: true,
-      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true,
+      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true,
     },
     {
       name: "مركز بيروت للتسوق - ABC Achrafieh",
@@ -149,7 +149,7 @@ async function main() {
       description: "مركز تسوق ABC في الأشرفية، مزود بمنحدرات وإعاقات مناسبة",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: ashrafieh.id,
       addedById: expert2.id, isVerified: true,
-      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true,
+      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true,
     },
     {
       name: "الجامعة الأمريكية في بيروت - AUB",
@@ -160,7 +160,7 @@ async function main() {
       description: "إحدى أعرق الجامعات في الشرق الأوسط، تتضمن ممرات مخصصة وكراسي متحركة",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: hamra.id,
       addedById: admin.id, isVerified: true,
-      hasRamp: true, hasElevator: true, hasAccessibleBathroom: false, hasAccessibleParking: true,
+      hasRamp: true, hasElevator: true, hasAccessibleBathroom: false, hasWideSpace: true,
     },
     {
       name: "ساحة النجمة - وسط بيروت",
@@ -171,7 +171,7 @@ async function main() {
       description: "ساحة تاريخية تم تطويرها بعد إعادة الإعمار، مع ممرات مبلطة للكراسي المتحركة",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: downtownBeirut.id,
       addedById: expert1.id, isVerified: false,
-      hasRamp: true, hasElevator: false, hasAccessibleBathroom: false, hasAccessibleParking: false,
+      hasRamp: true, hasElevator: false, hasAccessibleBathroom: false, hasWideSpace: false,
     },
     {
       name: "مركز إعادة التأهيل الوطني",
@@ -182,7 +182,7 @@ async function main() {
       description: "مركز متخصص في إعادة التأهيل الجسدي، مجهز بالكامل لخدمة ذوي الإعاقة الحركية",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: null,
       addedById: expert2.id, isVerified: true,
-      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true,
+      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true,
     },
     {
       name: "متحف بيروت الوطني",
@@ -193,7 +193,7 @@ async function main() {
       description: "يضم مقتنيات أثرية لبنانية نادرة، مع مداخل خاصة لذوي الاحتياجات الخاصة",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: null,
       addedById: expert1.id, isVerified: true,
-      hasRamp: true, hasElevator: false, hasAccessibleBathroom: true, hasAccessibleParking: true,
+      hasRamp: true, hasElevator: false, hasAccessibleBathroom: true, hasWideSpace: true,
     },
     {
       name: "مستشفى طرابلس الحكومي",
@@ -204,7 +204,7 @@ async function main() {
       description: "المستشفى الحكومي الرئيسي في طرابلس",
       governorateId: north.id, cityId: tripoli.id, areaId: areas.find(a => a.name === "القبة")?.id ?? null,
       addedById: admin.id, isVerified: false,
-      hasRamp: false, hasElevator: false, hasAccessibleBathroom: false, hasAccessibleParking: true,
+      hasRamp: false, hasElevator: false, hasAccessibleBathroom: false, hasWideSpace: true,
     },
     {
       name: "مجمع أبراج جونية التجاري",
@@ -215,7 +215,7 @@ async function main() {
       description: "مجمع تجاري على ساحل جونية",
       governorateId: mountLeb.id, cityId: jounieh.id, areaId: areas.find(a => a.name === "الجديدة")?.id ?? null,
       addedById: expert2.id, isVerified: false,
-      hasRamp: true, hasElevator: true, hasAccessibleBathroom: false, hasAccessibleParking: true,
+      hasRamp: true, hasElevator: true, hasAccessibleBathroom: false, hasWideSpace: true,
     },
     {
       name: "مستشفى صيدا الحكومي",
@@ -226,7 +226,7 @@ async function main() {
       description: "مستشفى الجنوب الحكومي الرئيسي",
       governorateId: south.id, cityId: sidon.id, areaId: areas.find(a => a.name === "المدينة القديمة")?.id ?? null,
       addedById: admin.id, isVerified: false,
-      hasRamp: false, hasElevator: false, hasAccessibleBathroom: false, hasAccessibleParking: false,
+      hasRamp: false, hasElevator: false, hasAccessibleBathroom: false, hasWideSpace: false,
     },
     {
       name: "ملعب الحمدان - صيدا",
@@ -237,7 +237,7 @@ async function main() {
       description: "ملعب رياضي بطاقة استيعابية كبيرة",
       governorateId: south.id, cityId: sidon.id, areaId: null,
       addedById: expert1.id, isVerified: false,
-      hasRamp: false, hasElevator: false, hasAccessibleBathroom: false, hasAccessibleParking: true,
+      hasRamp: false, hasElevator: false, hasAccessibleBathroom: false, hasWideSpace: true,
     },
     {
       name: "قلعة بعلبك الأثرية",
@@ -248,7 +248,7 @@ async function main() {
       description: "إحدى أبرز المعالم الأثرية في العالم والأكثر جذباً في لبنان",
       governorateId: bekaa.id, cityId: cities.find(c => c.nameEn === "Baalbek")!.id, areaId: null,
       addedById: admin.id, isVerified: false,
-      hasRamp: false, hasElevator: false, hasAccessibleBathroom: false, hasAccessibleParking: true,
+      hasRamp: false, hasElevator: false, hasAccessibleBathroom: false, hasWideSpace: true,
     },
     {
       name: "مطعم كمال - الروشة",
@@ -259,7 +259,7 @@ async function main() {
       description: "مطعم مطل على البحر مع مصعد لأصحاب الكراسي المتحركة",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: areas.find(a => a.name === "الروشة")?.id ?? null,
       addedById: expert2.id, isVerified: true,
-      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: false,
+      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: false,
     },
     {
       name: "بنك لبنان والمهجر - فرع الحمرا",
@@ -270,7 +270,7 @@ async function main() {
       description: "فرع بنك BLOM في الحمرا مع منحدر للدخول",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: hamra.id,
       addedById: expert1.id, isVerified: true,
-      hasRamp: true, hasElevator: false, hasAccessibleBathroom: false, hasAccessibleParking: false,
+      hasRamp: true, hasElevator: false, hasAccessibleBathroom: false, hasWideSpace: false,
     },
     {
       name: "فندق لو غراي بيروت",
@@ -281,7 +281,7 @@ async function main() {
       description: "فندق خمس نجوم بخدمات كاملة لذوي الاحتياجات الخاصة",
       governorateId: beirut.id, cityId: beirutCity.id, areaId: downtownBeirut.id,
       addedById: expert2.id, isVerified: true,
-      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true,
+      hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true,
     },
   ]).returning();
 
@@ -289,16 +289,16 @@ async function main() {
 
   // Evaluations for verified places
   const evalData = [
-    { placeId: places[0].id, expertId: expert1.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true, rating: 5, notes: "مرافق ممتازة وكاملة" },
-    { placeId: places[0].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true, rating: 4, notes: "مناسب جداً لأصحاب الكراسي المتحركة" },
-    { placeId: places[1].id, expertId: expert1.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true, rating: 4, notes: "يوفر المطار خدمة الكراسي المتحركة عند الطلب" },
-    { placeId: places[2].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true, rating: 5, notes: "من أفضل المراكز التجارية لذوي الاحتياجات الخاصة" },
-    { placeId: places[3].id, expertId: expert1.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: false, hasAccessibleParking: true, rating: 3, notes: "يحتاج الحرم الجامعي إلى تحسينات في الممرات" },
-    { placeId: places[5].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true, rating: 5, notes: "مجهز بالكامل كمركز متخصص" },
-    { placeId: places[6].id, expertId: expert1.id, hasRamp: true, hasElevator: false, hasAccessibleBathroom: true, hasAccessibleParking: true, rating: 4, notes: "لا يوجد مصعد لكن الطابق الأرضي متاح" },
-    { placeId: places[12].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: false, rating: 4, notes: "مطعم رائع مع وصول جيد" },
-    { placeId: places[13].id, expertId: expert1.id, hasRamp: true, hasElevator: false, hasAccessibleBathroom: false, hasAccessibleParking: false, rating: 3, notes: "منحدر مناسب لكن يفتقر لمرافق أخرى" },
-    { placeId: places[14].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasAccessibleParking: true, rating: 5, notes: "خدمة استثنائية لذوي الاحتياجات الخاصة" },
+    { placeId: places[0].id, expertId: expert1.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true, rating: 5, notes: "مرافق ممتازة وكاملة" },
+    { placeId: places[0].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true, rating: 4, notes: "مناسب جداً لأصحاب الكراسي المتحركة" },
+    { placeId: places[1].id, expertId: expert1.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true, rating: 4, notes: "يوفر المطار خدمة الكراسي المتحركة عند الطلب" },
+    { placeId: places[2].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true, rating: 5, notes: "من أفضل المراكز التجارية لذوي الاحتياجات الخاصة" },
+    { placeId: places[3].id, expertId: expert1.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: false, hasWideSpace: true, rating: 3, notes: "يحتاج الحرم الجامعي إلى تحسينات في الممرات" },
+    { placeId: places[5].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true, rating: 5, notes: "مجهز بالكامل كمركز متخصص" },
+    { placeId: places[6].id, expertId: expert1.id, hasRamp: true, hasElevator: false, hasAccessibleBathroom: true, hasWideSpace: true, rating: 4, notes: "لا يوجد مصعد لكن الطابق الأرضي متاح" },
+    { placeId: places[12].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: false, rating: 4, notes: "مطعم رائع مع وصول جيد" },
+    { placeId: places[13].id, expertId: expert1.id, hasRamp: true, hasElevator: false, hasAccessibleBathroom: false, hasWideSpace: false, rating: 3, notes: "منحدر مناسب لكن يفتقر لمرافق أخرى" },
+    { placeId: places[14].id, expertId: expert2.id, hasRamp: true, hasElevator: true, hasAccessibleBathroom: true, hasWideSpace: true, rating: 5, notes: "خدمة استثنائية لذوي الاحتياجات الخاصة" },
   ];
 
   await db.insert(evaluationsTable).values(evalData);

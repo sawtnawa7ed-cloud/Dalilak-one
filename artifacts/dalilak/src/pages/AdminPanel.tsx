@@ -119,7 +119,7 @@ export default function AdminPanel() {
                     <p className="text-xs text-muted-foreground mt-0.5">{p.category} · {p.governorateName}</p>
                   </div>
                   <button
-                    onClick={() => { if (confirm(`حذف "${p.name}" نهائياً؟`)) deletePlace.mutate({ id: p.id } as any); }}
+                    onClick={() => { if (confirm(`حذف "${p.name}" نهائياً؟`)) deletePlace.mutate({ id: p.id }); }}
                     disabled={deletePlace.isPending}
                     className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center text-red-400 shrink-0 active:scale-95 transition-transform disabled:opacity-50">
                     {deletePlace.isPending ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}

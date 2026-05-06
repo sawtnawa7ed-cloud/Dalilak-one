@@ -11,4 +11,5 @@ export interface ComplaintBody {
   message: string;
   senderName: string;
   senderEmail: string;
+  senderPhone: string;
 }

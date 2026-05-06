@@ -388,6 +388,7 @@ export const SubmitComplaintBody = zod.object({
   message: zod.string(),
   senderName: zod.string(),
   senderEmail: zod.string(),
+  senderPhone: zod.string(),
 });
 
 /**
