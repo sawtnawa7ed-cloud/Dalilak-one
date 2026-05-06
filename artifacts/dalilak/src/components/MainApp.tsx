@@ -82,6 +82,16 @@ export function MainApp() {
               </div>
             </div>
 
+            {/* Hero welcome */}
+            <div className="px-4 pt-6 pb-4 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-3">
+                <span className="text-4xl">♿</span>
+              </div>
+              <h2 className="text-xl font-black text-foreground leading-snug">نحو مكان</h2>
+              <h2 className="text-xl font-black text-primary leading-snug">يستقبلك بكرامة</h2>
+              <p className="text-xs text-muted-foreground mt-2">اكتشف الأماكن الصديقة لذوي الاحتياجات الخاصة في لبنان</p>
+            </div>
+
             {/* Categories */}
             <div className="flex gap-2 px-4 pt-4 pb-1 overflow-x-auto scrollbar-hide">
               {dynamicCategories.map((cat) => (
